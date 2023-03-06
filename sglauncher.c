@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-
 const char* app_dir = "/usr/share/applications";
+GtkWidget *cmd_row;
+GtkWidget *entry;
 
 void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_data) {
     const gchar *filename = gtk_widget_get_name(GTK_WIDGET(row)); 
@@ -79,6 +80,7 @@ if (file != NULL) {
     gchar *icon_name = NULL; // to store icon name
     gchar *app_name = NULL; // to store app name
 
+
 while (getline(&line, &len, file) != -1) {
     if (strstr(line, "GenericName=") == line) {
         // Remove trailing newline from name
@@ -113,6 +115,7 @@ while (getline(&line, &len, file) != -1) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_container_add(GTK_CONTAINER(row), box);
     gtk_widget_set_name(row, path);
+    
     // Create a GtkImage widget and set its icon with a size limit of 32x32
     GtkWidget *icon = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_BUTTON);
     if (icon == NULL) {
@@ -122,6 +125,7 @@ while (getline(&line, &len, file) != -1) {
     // Create a GtkLabel widget for the app name and set its text
     GtkWidget *label = gtk_label_new(app_name);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+
     // Add the GtkListBoxRow to the GtkListBox
     gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
 gtk_widget_set_size_request(row, -1,32);
@@ -147,6 +151,11 @@ gtk_widget_set_size_request(row, -1, 32);
 
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
+    GtkWidget *grid;
+GtkWidget *listbox2 = gtk_list_box_new();
+
+
+
 
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(window), "SGLauncher");
@@ -167,15 +176,11 @@ int main(int argc, char *argv[]) {
     GtkWidget *headerbar = gtk_header_bar_new();
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
     
-
-
-    
-
     // Create the button with an icon
+    entry = gtk_entry_new();
     GtkWidget *button = gtk_menu_button_new();
     GtkWidget *image = gtk_image_new_from_icon_name("menulibre", GTK_ICON_SIZE_BUTTON);
     gtk_container_add(GTK_CONTAINER(button), image);
-    GtkWidget *entry = gtk_entry_new();
     gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
     gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), button);
     GtkWidget *wtitle = gtk_label_new(NULL);
@@ -206,19 +211,148 @@ int main(int argc, char *argv[]) {
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_container_add(GTK_CONTAINER(window), scrolled_window);
+
 
     // Create a list box widget and set its properties
     GtkWidget *listbox = gtk_list_box_new();
     gtk_list_box_set_selection_mode(GTK_LIST_BOX(listbox), GTK_SELECTION_SINGLE);
-    g_signal_connect(listbox, "row-activated", G_CALLBACK(on_item_activated), NULL);
     gtk_container_add(GTK_CONTAINER(scrolled_window), listbox);
     gtk_widget_grab_focus(entry);
-    // Load apps into the list box
-    load_apps(GTK_LIST_BOX(listbox));
+    
+    // Create a new GtkListBoxRow
+cmd_row = gtk_list_box_row_new();
+GtkWidget *new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+gtk_container_add(GTK_CONTAINER(cmd_row), new_box);
 
+// Create a GtkImage widget and set its icon with a size limit of 32x32
+GtkWidget *cmdicon = gtk_image_new_from_icon_name("terminal-tango", GTK_ICON_SIZE_BUTTON);
+gtk_box_pack_start(GTK_BOX(new_box), cmdicon, FALSE, FALSE, 0);
+
+// Create a GtkLabel widget for the app name and set its text
+GtkWidget *cmdrun = gtk_label_new("Run in Terminal");
+gtk_box_pack_start(GTK_BOX(new_box), cmdrun, FALSE, FALSE, 0);
+
+// Add the new GtkListBoxRow to the GtkListBox
+gtk_list_box_insert(GTK_LIST_BOX(listbox2), cmd_row, -1);
+gtk_widget_set_size_request(cmd_row, -1, 32);
+
+
+
+
+
+
+
+
+
+void filter_listbox(GtkEntry *entry, GtkListBox *listbox) {
+    const gchar *text = gtk_entry_get_text(entry);
+    GList *children = gtk_container_get_children(GTK_CONTAINER(listbox));
+    GList *iter;
+    for (iter = children; iter != NULL; iter = iter->next) {
+        GtkWidget *row = iter->data;
+        const gchar *name = gtk_widget_get_name(row);
+        if (name != NULL && strstr(name, text) != NULL) {
+            gtk_widget_show(row);
+            gtk_widget_hide(listbox2);
+        } else {
+            gtk_widget_hide(row);
+               gtk_widget_show(listbox2);
+        }
+    }
+    g_list_free(children);
+}
+
+
+void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry) {
+    if (event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY) {
+        const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
+        
+        int found = 0;
+        char *path = getenv("PATH");
+        char *path_copy = strdup(path);
+        char *dir = strtok(path_copy, ":");
+
+        while (dir != NULL && !found) {
+            char *full_path = malloc(strlen(dir) + strlen(text) + 2);
+            sprintf(full_path, "%s/%s", dir, text);
+
+            if (access(full_path, F_OK) == 0) {
+                found = 1;
+                printf("File %s found in %s\n", text, dir);
+
+                char *terminal = getenv("TERMINAL");
+                if (terminal != NULL) {
+                    char *cmd = g_strdup_printf("%s %s", terminal, full_path);
+                    GError *error = NULL;
+                    g_spawn_command_line_async(cmd, &error);
+                    if (error != NULL) {
+                        printf("Error launching command: %s\n", error->message);
+                        g_error_free(error);
+                    }
+                    g_free(cmd);
+                } else {
+                    printf("TERMINAL environment variable not set\n");
+                              
+            GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "ERROR: TERMINAL environment variable not set. \n you can declare it on /etc/environment or your ~/.profile \n E.G.: TERMINAL=sakura");
+
+            gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+            gtk_dialog_run(GTK_DIALOG(dialog));
+            gtk_widget_destroy(dialog);
+                }
+            }
+
+            free(full_path);
+            dir = strtok(NULL, ":");
+        }
+
+        free(path_copy);
+
+        if (!found) {
+            printf("File %s not found in $PATH\n", text);
+
+            char *msg = g_strdup_printf("Error: Command '%s' not found", text);
+            GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", msg);
+            g_free(msg);
+
+            gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+            gtk_dialog_run(GTK_DIALOG(dialog));
+            gtk_widget_destroy(dialog);
+        }
+    }
+}
+
+
+
+
+// Connect signals to the new row
+g_signal_connect(listbox2, "button-press-event", G_CALLBACK(on_run_command), entry); 
+    g_signal_connect(listbox, "row-activated", G_CALLBACK(on_item_activated), NULL);
+    g_signal_connect(entry, "changed", G_CALLBACK(filter_listbox), listbox);
+    
+    
+    
+    // Load apps into the list box
+    grid = gtk_grid_new();
+    gtk_container_add(GTK_CONTAINER(window), grid);
+    gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+
+    gtk_widget_set_size_request(listbox2, -1, 32);
+    gtk_widget_set_size_request(scrolled_window, -1, 300);
+    gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 1, 1, 1);
+
+/*
+GtkWidget *focus_chain[] = { scrolled_window, listbox2, NULL };
+gtk_container_set_focus_child(GTK_CONTAINER(grid), focus_chain);
+*/
+    
+    
+    load_apps(GTK_LIST_BOX(listbox));
     gtk_widget_show_all(window);
+    gtk_widget_hide(listbox2);
     gtk_main();
+
+
 
     return 0;
 }
