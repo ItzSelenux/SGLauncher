@@ -5,7 +5,7 @@
 #include <dirent.h>
 #include <math.h>
 #include <ctype.h>
-#define MAX_LINE_LENGTH 64
+#define MAX_LINE_LENGTH 256
 
 const char* app_dirs[] = {"/usr/share/applications", "/usr/share/sglauncher", NULL};
 const char* quick_dirs[] = {NULL};
@@ -182,9 +182,9 @@ void load_apps(GtkListBox *listbox)
                     gtk_container_add(GTK_CONTAINER(row), box);
                     
                     ///create an query with the values, and then set is as name of row (for search)
-                    char query[256];
+                    char query[4096];
                     sprintf(query, "%s%s%s", app_name, path, icon_name);
-                    gtk_widget_set_name(row, query);
+                    gtk_widget_set_name(row, path);
 
                     // Create a GtkImage widget and set its icon with a size limit of 32x32
                     GtkWidget *icon = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_BUTTON);
@@ -563,11 +563,27 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 
         if (!found) 
         {
+       GPid pid;
+           
+           
+           
+           
+             gchar **args = g_strsplit(text, " ", -1);
 
-            char *msg = g_strdup_printf("Error: Command '%s' not found", text);
-            GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", msg);
-            g_free(msg);
-
+    // Spawn a new process asynchronously with the command and its arguments
+    GError *error = NULL;
+    gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
+    if (!success) 
+    {
+        g_warning("Failed to launch process: %s", error->message);
+        g_error_free(error);
+    }
+        
+        else
+        {
+            g_spawn_close_pid(pid);
+            gtk_main_quit();
+        }
             gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
             gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
@@ -642,7 +658,26 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
         if (!success)
         {
             g_warning("Failed to start program: %s", error->message);
-            g_error_free(error);
+           
+           
+           
+           
+             gchar **args = g_strsplit(text, " ", -1);
+
+    // Spawn a new process asynchronously with the command and its arguments
+    GError *error = NULL;
+    gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
+    if (!success) 
+    {
+        g_warning("Failed to launch process: %s", error->message);
+        g_error_free(error);
+    }
+        
+        else
+        {
+            g_spawn_close_pid(pid);
+            gtk_main_quit();
+        }
         }
         else if (success)
         {
