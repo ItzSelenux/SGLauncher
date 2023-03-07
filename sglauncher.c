@@ -57,7 +57,34 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
     }
     fclose(file);
 
-    // Split the command string into separate arguments
+    if (command != NULL) {
+    gchar *pos = strchr(command, '\n');
+    if (pos != NULL) {
+        *pos = '\0';
+    }
+    gchar *cmd= g_strdelimit(command, "%F", '\0');
+    gchar *trimmed_command = g_strstrip(cmd);
+
+        GError *error = NULL;
+        GPid pid;
+        gint exit_status = 0;
+        gboolean success = g_spawn_async_with_pipes(NULL,
+                                                    (gchar * []) {cmd, NULL},
+                                                    NULL,
+                                                    G_SPAWN_SEARCH_PATH,
+                                                    NULL,
+                                                    NULL,
+                                                    &pid,
+                                                    NULL,
+                                                    NULL,
+                                                    NULL,
+                                                    &error);
+        if (!success)
+        {
+            g_warning("Failed to restart program: %s", error->message);
+            g_error_free(error);
+            
+                // Split the command string into separate arguments
     gchar **args = g_strsplit(command, " ", -1);
 
     // Spawn a new process asynchronously with the command and its arguments
@@ -68,11 +95,15 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
         g_warning("Failed to launch process: %s", error->message);
         g_error_free(error);
     }
-
-    // Free the memory used by the args array
-    g_strfreev(args);
+        }
+        else
+        {
+            g_spawn_close_pid(pid);
+            gtk_main_quit();
+        }
+        g_free(line);
 }
-
+}
 
 void load_apps(GtkListBox *listbox) 
 {
@@ -466,6 +497,7 @@ gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     load_apps(GTK_LIST_BOX(listbox));
     gtk_widget_show_all(window);
 gtk_widget_hide(mathtext);
+gtk_widget_hide(listbox2);
     gtk_main();
     return 0;
 }
