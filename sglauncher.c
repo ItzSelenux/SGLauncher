@@ -5,15 +5,24 @@
 #include <dirent.h>
 #include <math.h>
 #include <ctype.h>
+#define MAX_LINE_LENGTH 64
 
 const char* app_dirs[] = {"/usr/share/applications", "/usr/share/sglauncher", NULL};
+const char* quick_dirs[] = {NULL};
+char *webengine;
 GtkWidget *cmd_row;
 GtkWidget *web_row;
 GtkWidget *entry;
 GtkWidget *label;
 GtkWidget *mathtext;
+GtkWidget *listbox2;
+GtkWidget *pr;
+GtkWidget *row;
+
 double evaluate(char* expression) 
 {
+
+               gtk_widget_show(mathtext);
     char* endptr;
     double result = strtod(expression, &endptr);
     char op;
@@ -81,7 +90,7 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
                                                     &error);
         if (!success)
         {
-            g_warning("Failed to restart program: %s", error->message);
+            g_warning("Failed to start program: %s", error->message);
             g_error_free(error);
             
                 // Split the command string into separate arguments
@@ -165,12 +174,17 @@ void load_apps(GtkListBox *listbox)
                             icon_name = g_strdup(line + 5);
                         }
                     }
+                                      
 
                     // Create a GtkListBoxRow with a GtkBox container
-                    GtkWidget *row = gtk_list_box_row_new();
+                    row = gtk_list_box_row_new();
                     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
                     gtk_container_add(GTK_CONTAINER(row), box);
-                    gtk_widget_set_name(row, path);
+                    
+                    ///create an query with the values, and then set is as name of row (for search)
+                    char query[256];
+                    sprintf(query, "%s%s%s", app_name, path, icon_name);
+                    gtk_widget_set_name(row, query);
 
                     // Create a GtkImage widget and set its icon with a size limit of 32x32
                     GtkWidget *icon = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_BUTTON);
@@ -206,15 +220,142 @@ void load_apps(GtkListBox *listbox)
 
 int main(int argc, char *argv[]) 
 {
+    char cengine[MAX_LINE_LENGTH];
+    //READ THE CONF
+    /////////////////////////////////////////
+    char *home_dir = getenv("HOME");
+    char *cwengine;
+    cwengine = " ";
+    if (home_dir == NULL) {
+        fprintf(stderr, "Error: HOME environment variable is not set.\n");
+        exit(1);
+    }
+
+    char config_file_path[256];
+    snprintf(config_file_path, sizeof(config_file_path), "%s/.config/sglauncher.conf", home_dir);
+
+    FILE *file = fopen(config_file_path, "r");
+    if (file == NULL) {
+        
+         if (file == NULL) {
+        FILE *default_conf = fopen("/etc/sglauncher.conf", "r");
+        if (default_conf == NULL) {
+            fprintf(stderr, "Error: could not open default configuration file /etc/seconfig.conf, please reinstall the program or put a config file in ~/.config/sglauncher.conf.\n");
+            exit(1);
+        }
+
+        file = fopen(config_file_path, "w");
+        if (file == NULL) {
+            fprintf(stderr, "Error: could not create %s for writing.\n", config_file_path);
+            exit(1);
+        }
+
+        int ch;
+        while ((ch = fgetc(default_conf)) != EOF) {
+            fputc(ch, file);
+        }
+
+        fclose(default_conf);
+        printf("Default configuration file copied to %s.\n", config_file_path);
+    } else {
+        fclose(file);
+        printf("%s exists and can be read.\n", config_file_path);
+    }
+        
+        
+    }
+
+// Open the file for reading
+    char line[MAX_LINE_LENGTH];
+    int wengine = 0, order = 0, showweb = 0, showcmd = 0, showcalc = 0;
+
+    if (file != NULL) {
+        // Read each line from the file and parse the variable assignments
+        while (fgets(line, MAX_LINE_LENGTH, file) != NULL) {
+            char *name = strtok(line, "=");
+            char *value_str = strtok(NULL, "=");
+            
+
+
+if (file != NULL) {
+    // Read each line from the file and parse the variable assignments
+    while (fgets(line, MAX_LINE_LENGTH, file) != NULL) {
+        char *name = strtok(line, "=");
+        char *value_str = strtok(NULL, "=");
+
+        if (name != NULL && value_str != NULL) {
+            // Set the value of the corresponding variable based on the name
+            if (strcmp(name, "order") == 0) 
+            {
+                order = atoi(value_str);
+            } 
+            else if (strcmp(name, "cengine") == 0) 
+            {
+                strncpy(cengine, value_str, sizeof(cengine));
+                cengine[sizeof(cengine)-1] = '\0'; // Ensure null-terminated
+            } 
+            else if (strcmp(name, "wengine") == 0)
+            {
+                wengine = atoi(value_str);
+            } 
+            else if (strcmp(name, "showweb") == 0) 
+            {
+                showweb = atoi(value_str);
+            } 
+            else if (strcmp(name, "showcmd") == 0) 
+            {
+                showcmd = atoi(value_str);
+            } 
+            else if (strcmp(name, "showcalc") == 0) 
+            {
+                showcalc = atoi(value_str);
+            }
+        }
+    }
+}
+        }
+        fclose(file); // Close the file
+    } else {
+        // Handle error if the file couldn't be opened
+        printf("Error opening file");
+        return 1;
+    }
+
+
+        if (wengine == 0 )
+    {
+        webengine = "https://duckduckgo.com/?q=";
+    }
+    else if (wengine == 1 )
+    {
+        webengine = "https://www.google.com/search?q=";
+    }
+    else if (wengine == 2 )
+    {
+        webengine = "https://www.bing.com/search?q=";
+    }
+    else if (wengine == 3 )
+    {
+        webengine = cengine;
+    }
+    
+    
+    // Use the values that were read from the file
+    printf("WebEngine: %s\nShowAppsFirst: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showcmd, showweb, showcalc);
+    ////////////////////////////////////////
+    
+    
     gtk_init(&argc, &argv);
     GtkWidget *dialog;
-      char* home_dir = getenv("HOME");
+
     char local_app_dir[1024] = "";
     sprintf(local_app_dir, "%s/.local/share/applications", home_dir);
+    sprintf(local_app_dir, "%s/.local/share/sglauncher/quickaccess", home_dir);
     app_dirs[2] = local_app_dir;
+    quick_dirs[0] = local_app_dir;
     
     GtkWidget *grid;
-GtkWidget *listbox2 = gtk_list_box_new();
+listbox2 = gtk_list_box_new();
 
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(window), "SGLauncher");
@@ -310,8 +451,16 @@ GtkWidget *webrun = gtk_label_new("Search on Web");
 gtk_box_pack_start(GTK_BOX(web_box), webrun, FALSE, FALSE, 0);
 
 // Add the new GtkListBoxRow to the GtkListBox
+
+if (showcmd == 1)
+{
 gtk_list_box_insert(GTK_LIST_BOX(listbox2), cmd_row, -1);
+}
+
+if (showweb == 1)
+{
 gtk_list_box_insert(GTK_LIST_BOX(listbox2), web_row, -1);
+}
 gtk_widget_set_size_request(web_row, -1, 32);
 gtk_widget_set_size_request(cmd_row, -1, 32);
 
@@ -320,6 +469,7 @@ gtk_widget_set_size_request(cmd_row, -1, 32);
     
 void filter_listbox(GtkEntry *entry, GtkListBox *listbox) 
 {
+    
     const gchar *text = gtk_entry_get_text(entry);
     GList *children = gtk_container_get_children(GTK_CONTAINER(listbox));
     GList *iter;
@@ -333,11 +483,11 @@ void filter_listbox(GtkEntry *entry, GtkListBox *listbox)
             gtk_widget_show(row);
             gtk_widget_hide(listbox2);
             gtk_widget_hide(mathtext);
+            gtk_widget_hide(pr);
         } else 
         {
             gtk_widget_hide(row);
-               gtk_widget_show(listbox2);
-               gtk_widget_show(mathtext);
+            gtk_widget_show(listbox2);
         }
     }
     
@@ -347,9 +497,11 @@ void filter_listbox(GtkEntry *entry, GtkListBox *listbox)
         char buffer[256];
         snprintf(buffer, 256, "%g", result);
         gtk_label_set_text(GTK_LABEL(label), buffer);
-    } else 
+        gtk_widget_hide(pr);
+    } else if  (strlen(text) > 0 && !isdigit(text[0])) 
     {
         gtk_label_set_text(GTK_LABEL(label), "");
+        gtk_widget_show(pr);
     }
     
 }
@@ -381,9 +533,10 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
                 char *terminal = getenv("TERMINAL");
                 if (terminal != NULL) 
                 {
-                    char *cmd = g_strdup_printf("%s %s", terminal, full_path);
+                    char *cmd = g_strdup_printf("%s -e %s", terminal, full_path);
                     GError *error = NULL;
                     g_spawn_command_line_async(cmd, &error);
+                    printf(cmd);
                     if (error != NULL) 
                     {
                         printf("Error launching command: %s\n", error->message);
@@ -410,7 +563,6 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 
         if (!found) 
         {
-            printf("File %s not found in $PATH\n", text);
 
             char *msg = g_strdup_printf("Error: Command '%s' not found", text);
             GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", msg);
@@ -421,13 +573,16 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
             gtk_widget_destroy(dialog);
         }
     }
-    else if ((void*)selected_row == (void*)cmd_row)
+    else if ((void*)selected_row == (void*)web_row)
     {
+ 
            char command[256];
-            sprintf(command, "xdg-open https://duckduckgo.com/?q=", entry);
+            sprintf(command, "xdg-open %s%s", webengine, text);
 
     // execute the command
+    printf(command);
     system(command);
+    gtk_main_quit();
     }
 }
 
@@ -456,6 +611,58 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
     gtk_widget_destroy(dialog);
     
     }
+    
+    
+gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+    const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
+        
+    if (event->keyval == GDK_KEY_Escape) 
+    {
+        gtk_main_quit();
+        return TRUE;
+    }
+    else if(event->keyval == GDK_KEY_Return)
+    {
+           if (strlen(text) > 0 && !isdigit(text[0])) 
+    {
+       GError *error = NULL;
+        GPid pid;
+        gint exit_status = 0;
+        gboolean success = g_spawn_async_with_pipes(NULL,
+                                                    (gchar * []) {(gchar *) text, NULL},
+                                                    NULL,
+                                                    G_SPAWN_SEARCH_PATH,
+                                                    NULL,
+                                                    NULL,
+                                                    &pid,
+                                                    NULL,
+                                                    NULL,
+                                                    NULL,
+                                                    &error);
+        if (!success)
+        {
+            g_warning("Failed to start program: %s", error->message);
+            g_error_free(error);
+        }
+        else if (success)
+        {
+            gtk_main_quit();
+            g_spawn_close_pid(pid);
+        }
+    }
+    }
+    else if(event->keyval == GDK_KEY_Down && gtk_widget_has_focus(entry))
+    {
+        gtk_widget_grab_focus(row);
+        gtk_widget_set_state_flags(row, GTK_STATE_FLAG_SELECTED, TRUE);
+    }
+    return FALSE;
+}
+
+
+
+
+ g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), row);
     g_signal_connect(submenu_item1, "activate", G_CALLBACK(on_submenu_item1_selected), NULL);
     g_signal_connect(submenu_item3, "activate", G_CALLBACK(on_submenu_item3_selected), NULL);
    g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
@@ -471,23 +678,47 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 // Set the vertical expand of the scrolled window to fill the available space
 
     mathtext = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-    GtkWidget *math = gtk_label_new("Math Formula: ");
+    GtkWidget *math = gtk_label_new("Math Answer: ");
     label = gtk_label_new("");
+    pr = gtk_label_new("Press Enter to Run entry on background");
 
-
+        if (showcalc == 1)
+        {
         gtk_box_pack_start(GTK_BOX(mathtext), math, TRUE, TRUE, 0);
-    
         gtk_box_pack_start(GTK_BOX(mathtext), label, TRUE, TRUE, 0);
-
+        }
 
 gtk_widget_set_vexpand(scrolled_window, TRUE);
 gtk_widget_set_hexpand(scrolled_window, TRUE);
 // Set the size request of the listbox to have a fixed height of 64 pixels
-    gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 0, 1, 1);
-gtk_widget_set_size_request(listbox2, -1, 64);
-gtk_widget_set_size_request(scrolled_window, -1, 256);
-    gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 3, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 2, 1, 1);
+
+
+        if (order == 0)
+        {
+        gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 4, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 3, 1, 1);
+        }
+        else if (order == 1)
+        {
+        gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 4, 1, 1);
+        }
+        else if (order == 2)
+        {
+        gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), listbox2, 1, 3, 1, 1);
+        }
+        else if (order == 3)
+        {
+        gtk_grid_attach(GTK_GRID(grid), scrolled_window, 1, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 3, 1, 1);
+        }
+        
+        gtk_widget_set_size_request(listbox2, -1, -1);
+        gtk_widget_set_size_request(scrolled_window, -1, 256);
+    gtk_grid_attach(GTK_GRID(grid), pr, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
+
 
 /*
 GtkWidget *focus_chain[] = { scrolled_window, listbox2, NULL };
@@ -498,6 +729,7 @@ gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_widget_show_all(window);
 gtk_widget_hide(mathtext);
 gtk_widget_hide(listbox2);
+gtk_widget_hide(pr);
     gtk_main();
     return 0;
 }

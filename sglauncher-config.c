@@ -70,7 +70,13 @@
         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(webcombo), "Custom");
     
     GtkWidget *webctm = gtk_entry_new();
-    GtkWidget *order = gtk_check_button_new(); 
+    GtkWidget *order = gtk_combo_box_text_new(); 
+    
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(order), "Horizontal - Apps at top");
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(order), "Horizontal - Apps at bottom");
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(order), "Vertical - Apps at left");
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(order), "Vertical - Apps at right");
+        
     GtkWidget *showcmd = gtk_check_button_new(); 
     GtkWidget *showweb =  gtk_check_button_new();
     GtkWidget *showcalc =  gtk_check_button_new(); 
@@ -86,7 +92,7 @@
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Custom Search Engine:"), 0, 2, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), webctm, 1, 2, 1, 1);
 
-    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Show Apps first"), 0, 3, 1, 1);    
+    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Item Order:"), 0, 3, 1, 1);    
     gtk_grid_attach(GTK_GRID(grid), order, 1, 3, 1, 1);
 
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Show \"Run in Terminal\" entry "), 0, 4, 1, 1); 
@@ -117,30 +123,53 @@
 
     const char *web_ctm = gtk_entry_get_text(GTK_ENTRY(webctm));
     const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo));
+    const gchar *active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo));
     gboolean gorder = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(order));
     gboolean gshowcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(showcmd));
     gboolean gshowweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(showweb));
     gboolean gshowcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(showcalc));
     const gchar *cweb = NULL;
+    const gchar *corder = NULL;
     
         if (active_text != NULL) 
         {
                  if (g_strcmp0(active_text, "Google") == 0) 
             {
-                cweb = "--same-as";
+                cweb = "1";
             } 
             else if (g_strcmp0(active_text, "DuckDuckGo") == 0) 
             {
-                cweb = "--left-of";
+                cweb = "0";
             } 
             else if (g_strcmp0(active_text, "Bing") == 0) 
             {
-                cweb = "--right-of";
+                cweb = "2";
             } 
             else if (g_strcmp0(active_text, "Custom") == 0) 
             {
                 cweb = web_ctm;
         }
+        
+        
+              if (active_order != NULL) 
+        {
+                 if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) 
+            {
+                corder = "0";
+            } 
+            else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) 
+            {
+                corder = "1";
+            } 
+            else if (g_strcmp0(active_order, "Vertical - Apps at left") == 0) 
+            {
+                corder = "2";
+            } 
+            else if (g_strcmp0(active_order, "Vertical - Apps at right") == 0) 
+            {
+                corder = "3";
+        }
+    }
     }
     
     
