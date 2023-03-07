@@ -413,10 +413,10 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
     {
         dialog = gtk_about_dialog_new();
 
-    gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher-config");
+    gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher");
     gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "1.0");
     gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2023 ItzSelenux for Simple GTK Desktop Environment");
-    gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "SGDE SGLauncher Settings Manager");
+    gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
     gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/sglauncher");
     gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
     gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_MIT_X11);
@@ -462,7 +462,7 @@ gtk_widget_set_size_request(scrolled_window, -1, 256);
 GtkWidget *focus_chain[] = { scrolled_window, listbox2, NULL };
 gtk_container_set_focus_child(GTK_CONTAINER(grid), focus_chain[0]);
 */
-
+gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     load_apps(GTK_LIST_BOX(listbox));
     gtk_widget_show_all(window);
 gtk_widget_hide(mathtext);
