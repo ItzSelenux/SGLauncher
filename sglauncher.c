@@ -7,7 +7,7 @@
 #include <ctype.h>
 #define MAX_LINE_LENGTH 256
 
-const char* app_dirs[] = {"/usr/share/applications", "/usr/share/sglauncher", NULL};
+const char* app_dirs[] = {"/usr/share/applications", "/home/itszariep/.local/share/applications", NULL};
 const char* quick_dirs[] = {NULL};
 char *webengine;
 GtkWidget *cmd_row;
@@ -114,67 +114,52 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 }
 }
 
-void load_apps(GtkListBox *listbox) 
-{
-    for (int i = 0; i < sizeof(app_dirs)/sizeof(app_dirs[0]); i++)
-     {
+void load_apps(GtkListBox *listbox) {
+    for (int i = 0; i < sizeof(app_dirs) / sizeof(app_dirs[0]); i++) {
         DIR *dir = opendir(app_dirs[i]);
-        if (dir != NULL) 
-        {
+        if (dir != NULL) {
             struct dirent *ent;
-            while ((ent = readdir(dir)) != NULL) 
-            {
-                if (ent->d_name[0] == '.') 
-                {
+            while ((ent = readdir(dir)) != NULL) {
+                if (ent->d_name[0] == '.') {
                     continue;
                 }
                 gchar *path = g_strdup_printf("%s/%s", app_dirs[i], ent->d_name);
                 FILE *file = fopen(path, "r");
-                if (file != NULL) 
-                {
+                if (file != NULL) {
                     gchar *line = NULL;
                     size_t len = 0;
-                    gchar *icon_name = NULL; // to store icon name
-                    gchar *app_name = NULL; // to store app name
+                    gchar *icon_name = NULL;
+                    gchar *app_name = NULL;
 
-                    while (getline(&line, &len, file) != -1) 
-                    {
-                        if (strstr(line, "GenericName=") == line) 
-                        {
-                            // Remove trailing newline from name
+                    while (getline(&line, &len, file) != -1) {
+                        if (strstr(line, "GenericName=") == line) {
                             gchar *pos = strchr(line + 12, '\n');
-                            if (pos != NULL) 
-                            {
+                            if (pos != NULL) {
                                 *pos = '\0';
                             }
-                            if (strlen(line + 12) > 0) 
-                            {
+                            if (strlen(line + 12) > 0) {
                                 app_name = g_strdup(line + 12);
                             }
-                        } else if (strstr(line, "Name=") == line) 
-                        {
-                            // Use Name if GenericName is not available or empty
+                        } else if (strstr(line, "Name=") == line) {
                             gchar *pos = strchr(line + 5, '\n');
-                            if (pos != NULL) 
-                            {
+                            if (pos != NULL) {
                                 *pos = '\0';
                             }
-                            if (strlen(line + 5) > 0 && app_name == NULL) 
-                            {
+                            if (strlen(line + 5) > 0 && app_name == NULL) {
                                 app_name = g_strdup(line + 5);
                             }
-                        } else if (strstr(line, "Icon=") == line) 
-                        {
-                            // Extract icon name from the desktop entry file
+                        } else if (strstr(line, "Icon=") == line) {
                             gchar *pos = strchr(line + 5, '\n');
-                            if (pos != NULL) 
-                            {
+                            if (pos != NULL) {
                                 *pos = '\0';
                             }
                             icon_name = g_strdup(line + 5);
                         }
                     }
-                                      
+
+                    // Concatenate app name, icon name, and path to form the search string
+                    gchar *search_str = g_strdup_printf("%s%s%s", app_name ? app_name : "", icon_name ? icon_name : "", path);
+         
 
                     // Create a GtkListBoxRow with a GtkBox container
                     row = gtk_list_box_row_new();
@@ -186,21 +171,29 @@ void load_apps(GtkListBox *listbox)
                     sprintf(query, "%s%s%s", app_name, path, icon_name);
                     gtk_widget_set_name(row, path);
 
-                    // Create a GtkImage widget and set its icon with a size limit of 32x32
-                    GtkWidget *icon = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_BUTTON);
-                    if (icon == NULL) 
-                    {
-                        icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
-                    }
-                    gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
+
+GtkIconTheme *theme = gtk_icon_theme_get_default();
+GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
+GdkPixbuf *licon = gtk_icon_info_load_icon(info, NULL);
+
+if (licon != NULL) {
+    GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(licon, 16, 16, GDK_INTERP_BILINEAR);
+    GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
+    gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
+    g_object_unref(resized_icon);
+    g_object_unref(licon);
+} else {
+    GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
+    gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
+}
                     // Create a GtkLabel widget for the app name and set its text
                     GtkWidget *label = gtk_label_new(app_name);
                     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
 
                     // Add the GtkListBoxRow to the GtkListBox
                     gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
-                    gtk_widget_set_size_request(row, -1,32);
-                    gtk_widget_set_size_request(row, -1, 32);
+                    gtk_widget_set_size_request(box, -1, 32);
+                    gtk_widget_set_size_request(box, -1, 32);
 
     g_free(icon_name);
     g_free(app_name);
@@ -220,6 +213,17 @@ void load_apps(GtkListBox *listbox)
 
 int main(int argc, char *argv[]) 
 {
+              int nocsd = 0;
+
+
+  for(int i = 1; i < argc; i++) {
+    if(strcmp(argv[i], "--nocsd") == 0) {
+      nocsd = 1;
+      printf("CSD Disabled, using fallback display \n");
+    }
+  }
+    
+    
     char cengine[MAX_LINE_LENGTH];
     //READ THE CONF
     /////////////////////////////////////////
@@ -391,7 +395,7 @@ listbox2 = gtk_list_box_new();
     gtk_widget_set_hexpand(GTK_WIDGET(entry), TRUE);
     gtk_widget_set_vexpand(GTK_WIDGET(entry), TRUE);
 
-    gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
+
     // Create the submenu
     GtkWidget *submenu = gtk_menu_new();
 
@@ -409,8 +413,12 @@ listbox2 = gtk_list_box_new();
     gtk_menu_button_set_popup(GTK_MENU_BUTTON(button), submenu);
     
 
+        if (nocsd == 0 )
+    {
     // Add the header bar to the main window
+        gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
     gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
+    }
 
     // Create a scrolled window widget and set its properties
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
@@ -469,7 +477,6 @@ gtk_widget_set_size_request(cmd_row, -1, 32);
     
 void filter_listbox(GtkEntry *entry, GtkListBox *listbox) 
 {
-    
     const gchar *text = gtk_entry_get_text(entry);
     GList *children = gtk_container_get_children(GTK_CONTAINER(listbox));
     GList *iter;
@@ -629,7 +636,8 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
     }
     
     
-gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) 
+{
     const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
         
     if (event->keyval == GDK_KEY_Escape) 
@@ -751,6 +759,7 @@ gtk_widget_set_hexpand(scrolled_window, TRUE);
         
         gtk_widget_set_size_request(listbox2, -1, -1);
         gtk_widget_set_size_request(scrolled_window, -1, 256);
+        gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), pr, 0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
 
