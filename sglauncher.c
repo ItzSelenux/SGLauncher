@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
          if (file == NULL) {
         FILE *default_conf = fopen("/etc/sglauncher.conf", "r");
         if (default_conf == NULL) {
-            fprintf(stderr, "Error: could not open default configuration file /etc/seconfig.conf, please reinstall the program or put a config file in ~/.config/sglauncher.conf.\n");
+            fprintf(stderr, "Error: could not open default configuration file /etc/sgconfig.conf, please reinstall the program or put a config file in ~/.config/sglauncher.conf.\n");
             exit(1);
         }
 
@@ -345,7 +345,7 @@ if (file != NULL) {
     
     
     // Use the values that were read from the file
-    printf("WebEngine: %s\nShowAppsFirst: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showcmd, showweb, showcalc);
+    printf("WebEngine: %s\nOrder: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showcmd, showweb, showcalc);
     ////////////////////////////////////////
     
     
@@ -628,7 +628,7 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
     gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/sglauncher");
     gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
-    gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_MIT_X11);
+    gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_GPL_3_0);
     gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),"menulibre");
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -736,12 +736,12 @@ gtk_widget_set_hexpand(scrolled_window, TRUE);
 // Set the size request of the listbox to have a fixed height of 64 pixels
 
 
-        if (order == 0)
+        if (order == 1)
         {
         gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 4, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 3, 1, 1);
         }
-        else if (order == 1)
+        else if (order == 0)
         {
         gtk_grid_attach(GTK_GRID(grid), scrolled_window, 0, 3, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 4, 1, 1);
