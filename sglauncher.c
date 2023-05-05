@@ -613,7 +613,7 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 
        void on_submenu_item1_selected(GtkMenuItem *menuitem, gpointer userdata) 
     {
-                if (access("/usr/bin/sgrandr-cfg", F_OK) == 0) 
+                if (access("/usr/bin/sglauncher-cfg", F_OK) == 0) 
         {
             system("/usr/bin/sglauncher-cfg");
         }
