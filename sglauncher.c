@@ -613,7 +613,19 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 
        void on_submenu_item1_selected(GtkMenuItem *menuitem, gpointer userdata) 
     {
-        system("./sglauncher-config");
+                if (access("/usr/bin/sgrandr-cfg", F_OK) == 0) 
+        {
+            system("/usr/bin/sglauncher-cfg");
+        }
+        else if
+        (access("./sglauncher-cfg", F_OK) == 0) 
+        {
+            system("./sglauncher-cfg");
+        } 
+        else 
+        {
+            printf("\033[1;31mERROR\033[0m: sglauncher-cfg not detected, please reinstall this program\n");
+        }
     
     }
 

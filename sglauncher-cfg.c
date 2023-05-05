@@ -297,6 +297,7 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
    
         char *args[] = {argv[0], NULL};
     execvp(args[0], args);
+
     } else {
         // User clicked Cancel
         printf("Operation cancelled.\n");
@@ -360,8 +361,6 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
         
  printf("\nWebEngine: %s\nCustomWebEngine: %s\nOrder: %s\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", cweb, cwebng, corder, gshowcmd, gshowweb, gshowcalc);
 
-
-    // open the config file for reading and writing
     FILE *fp = fopen(config_file_path, "r+");
     if (fp == NULL) {
         perror("Failed to open config file");
@@ -373,19 +372,17 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
     {
         if (strncmp(line, "order=", 6) == 0) 
         {
-            // replace the current value of order with the new value
             fseek(fp, -strlen(line), SEEK_CUR);
             fprintf(fp, "order=%s\n", corder);
         }
         else if (strncmp(line, "wengine=", 8) == 0) 
         {
-            // replace the current value of wengine with the new value
             fseek(fp, -strlen(line), SEEK_CUR);
             fprintf(fp, "wengine=%s\n", cweb);
         }
     /*    else if (strncmp(line, "cengine=", 8) == 0) 
      * {
-            // replace the current value of cengine with the new value
+
        if (cwebng !=NULL) {
             fseek(fp, -strlen(line), SEEK_CUR);
             fprintf(fp, "cengine=%s\n", cwebng);
@@ -393,19 +390,17 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
         } */
         else if (strncmp(line, "showweb=", 8) == 0) 
         {
-            // replace the current value of showweb with the new value
             fseek(fp, -strlen(line), SEEK_CUR);
             fprintf(fp, "showweb=%d\n", gshowweb);
         }
         else if (strncmp(line, "showcmd=", 8) == 0) 
         {
-            // replace the current value of showcmd with the new value
+  
             fseek(fp, -strlen(line), SEEK_CUR);
             fprintf(fp, "showcmd=%d\n", gshowcmd);
         }
         else if (strncmp(line, "showcalc=", 9) == 0) 
         {
-            // replace the current value of showcalc with the new value
             fseek(fp, -strlen(line), SEEK_CUR);
             fprintf(fp, "showcalc=%d\n", gshowcalc);
         }
@@ -445,12 +440,14 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
     g_signal_connect(defbtn, "clicked", G_CALLBACK(on_default_button_clicked), NULL);
 
     // End
+    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_widget_show_all(window);
     if (wengine != 3 )
     {
         gtk_widget_hide(webctm);
         gtk_widget_hide(weblabel);
     }
+
     gtk_main();
 return 0;
 }

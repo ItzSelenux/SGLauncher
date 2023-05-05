@@ -10,11 +10,11 @@ LIBS = `pkg-config --libs gtk+-3.0` -lm
 
 # File names
 
-SRC = sglauncher.c sglauncher-config.c
+SRC = sglauncher.c sglauncher-cfg.c
 
 OBJ = $(SRC:.c=.o)
 
-EXE = sglauncher sglauncher-config
+EXE = sglauncher sglauncher-cfg
 
 # Build executable files
 
@@ -24,7 +24,7 @@ sglauncher: sglauncher.o
 
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 
-sglauncher-config: sglauncher-config.o
+sglauncher-cfg: sglauncher-cfg.o
 
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 
@@ -40,7 +40,7 @@ test:
 
 	./sglauncher
 
-	./sglauncher-config
+	./sglauncher-cfg
 
 # Clean object files and executables
 
