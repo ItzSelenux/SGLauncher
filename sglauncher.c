@@ -635,7 +635,6 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
         dialog = gtk_about_dialog_new();
 
     gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher");
-    gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "1.0");
     gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2023 ItzSelenux for Simple GTK Desktop Environment");
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
     gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/sglauncher");
@@ -652,12 +651,13 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 {
     const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
         
-    if (event->keyval == GDK_KEY_Escape) 
-    {
-        gtk_main_quit();
-        return TRUE;
-    }
-    else if(event->keyval == GDK_KEY_Return)
+if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_q && (event->state & GDK_CONTROL_MASK))) 
+{
+    gtk_main_quit();
+    return TRUE;
+}
+
+    else if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_m && (event->state & GDK_CONTROL_MASK))) 
     {
            if (strlen(text) > 0 && !isdigit(text[0])) 
     {

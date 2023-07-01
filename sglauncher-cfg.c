@@ -422,7 +422,6 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
         dialog = gtk_about_dialog_new();
 
     gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher-config");
-    gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "1.0");
     gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2023 ItzSelenux for Simple GTK Desktop Environment");
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "SGDE SGLauncher Settings Manager");
     gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/sglauncher");
