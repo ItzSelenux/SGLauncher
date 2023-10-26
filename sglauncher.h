@@ -7,6 +7,7 @@
 #include <ctype.h>
 #define ML 256
 
+const gchar *active_text;
 const char* app_dirs[] = {"/usr/share/applications", "/home/itszariep/.local/share/applications", NULL};
 const char* quick_dirs[] = {NULL};
 char *pm;
@@ -130,16 +131,16 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 		GPid pid;
 		gint exit_status = 0;
 		gboolean success = g_spawn_async_with_pipes(NULL,
-													(gchar * []) {cmd, NULL},
-													NULL,
-													G_SPAWN_SEARCH_PATH,
-													NULL,
-													NULL,
-													&pid,
-													NULL,
-													NULL,
-													NULL,
-													&error);
+			(gchar * []) {cmd, NULL},
+			NULL,
+			G_SPAWN_SEARCH_PATH,
+			NULL,
+			NULL,
+			&pid,
+			NULL,
+			NULL,
+			NULL,
+			&error);
 		if (!success)
 		{
 			g_warning("Failed to start program: %s", error->message);
@@ -183,31 +184,24 @@ void load_apps(GtkListBox *listbox) {
 					gchar *icon_name = NULL;
 					gchar *app_name = NULL;
 
-					while (getline(&line, &len, file) != -1) {
-						if (strstr(line, "GenericName=") == line) {
-							gchar *pos = strchr(line + 12, '\n');
-							if (pos != NULL) {
-								*pos = '\0';
-							}
-							if (strlen(line + 12) > 0) {
-								app_name = g_strdup(line + 12);
-							}
-						} else if (strstr(line, "Name=") == line) {
-							gchar *pos = strchr(line + 5, '\n');
-							if (pos != NULL) {
-								*pos = '\0';
-							}
-							if (strlen(line + 5) > 0 && app_name == NULL) {
-								app_name = g_strdup(line + 5);
-							}
-						} else if (strstr(line, "Icon=") == line) {
-							gchar *pos = strchr(line + 5, '\n');
-							if (pos != NULL) {
-								*pos = '\0';
-							}
-							icon_name = g_strdup(line + 5);
-						}
+				while (getline(&line, &len, file) != -1) {
+				if (strstr(line, "Name=") == line && app_name == NULL) {
+					gchar *pos = strchr(line + 5, '\n');
+					if (pos != NULL) {
+						*pos = '\0';
 					}
+					if (strlen(line + 5) > 0) {
+						app_name = g_strdup(line + 5);
+					}
+				
+				} else if (strstr(line, "Icon=") == line) {
+					gchar *pos = strchr(line + 5, '\n');
+					if (pos != NULL) {
+						*pos = '\0';
+					}
+					icon_name = g_strdup(line + 5);
+				}
+				}
 
 					// Concatenate app name, icon name, and path to form the search string
 					gchar *search_str = g_strdup_printf("%s%s%s", app_name ? app_name : "", icon_name ? icon_name : "", path);
@@ -228,24 +222,27 @@ GtkIconTheme *theme = gtk_icon_theme_get_default();
 GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
 GdkPixbuf *licon = gtk_icon_info_load_icon(info, NULL);
 
-if (licon != NULL) {
+if (licon != NULL) 
+{
 	GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(licon, 16, 16, GDK_INTERP_BILINEAR);
 	GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
 	gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
 	g_object_unref(resized_icon);
 	g_object_unref(licon);
-} else {
+}
+else
+{
 	GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
 }
-					// Create a GtkLabel widget for the app name and set its text
-					GtkWidget *label = gtk_label_new(app_name);
-					gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-
-					// Add the GtkListBoxRow to the GtkListBox
-					gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
-					gtk_widget_set_size_request(box, -1, 32);
-					gtk_widget_set_size_request(box, -1, 32);
+		// Create a GtkLabel widget for the app name and set its text
+		GtkWidget *label = gtk_label_new(app_name);
+		gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+	
+		// Add the GtkListBoxRow to the GtkListBox
+		gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
+		gtk_widget_set_size_request(box, -1, 32);
+		gtk_widget_set_size_request(box, -1, 32);
 
 	g_free(icon_name);
 	g_free(app_name);
@@ -282,16 +279,16 @@ if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_q && (event->st
 		GPid pid;
 		gint exit_status = 0;
 		gboolean success = g_spawn_async_with_pipes(NULL,
-													(gchar * []) {(gchar *) text, NULL},
-													NULL,
-													G_SPAWN_SEARCH_PATH,
-													NULL,
-													NULL,
-													&pid,
-													NULL,
-													NULL,
-													NULL,
-													&error);
+			(gchar * []) {(gchar *) text, NULL},
+			NULL,
+			G_SPAWN_SEARCH_PATH,
+			NULL,
+			NULL,
+			&pid,
+			NULL,
+			NULL,
+			NULL,
+			&error);
 		if (!success)
 		{
 			g_warning("Failed to start program: %s", error->message);
@@ -612,7 +609,7 @@ if (file != NULL) {
 }
 
  void on_webcombo_changed(GtkComboBox *webcombo, gpointer user_data) {
-	const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo));
+	active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo));
 	GtkWidget *webctm = GTK_WIDGET(user_data);
 	GtkWidget *webctmlb = GTK_WIDGET(g_object_get_data(G_OBJECT(webctm), "webctmlb"));
 
@@ -681,29 +678,69 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data) {
 			} 
 			else if (g_strcmp0(active_text, "Custom") == 0) 
 			{
-				  cweb = "3";
+				cweb = "3";
 		}
-		
-		
-			  if (active_order != NULL) 
+			if (active_order != NULL) 
 		{
 				 if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) 
 			{
 				corder = "0";
-			} 
+			}
 			else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) 
 			{
 				corder = "1";
-			} 
+			}
 			else if (g_strcmp0(active_order, "Vertical - Apps at left") == 0) 
 			{
 				corder = "2";
-			} 
+			}
 			else if (g_strcmp0(active_order, "Vertical - Apps at right") == 0) 
 			{
 				corder = "3";
+			}
 		}
-		restart_program(NULL,pm);
 	}
+ FILE *fp = fopen(config_file_path, "r+");
+	if (fp == NULL) {
+		perror("Failed to open config file");
+		exit(EXIT_FAILURE);
 	}
+
+	char line[ML];
+	while (fgets(line, ML, fp) != NULL) 
+	{
+		if (strncmp(line, "order=", 6) == 0) 
+		{
+			fseek(fp, -strlen(line), SEEK_CUR);
+			fprintf(fp, "order=%s\n", corder);
+		}
+		else if (strncmp(line, "wengine=", 8) == 0) 
+		{
+			fseek(fp, -strlen(line), SEEK_CUR);
+			fprintf(fp, "wengine=%s\n", cweb);
+		}
+		else if (strncmp(line, "showweb=", 8) == 0) 
+		{
+			fseek(fp, -strlen(line), SEEK_CUR);
+			fprintf(fp, "showweb=%d\n", gshowweb);
+		}
+		else if (strncmp(line, "showcmd=", 8) == 0) 
+		{
+
+			fseek(fp, -strlen(line), SEEK_CUR);
+			fprintf(fp, "showcmd=%d\n", gshowcmd);
+		}
+		else if (strncmp(line, "showcalc=", 9) == 0) 
+		{
+			fseek(fp, -strlen(line), SEEK_CUR);
+			fprintf(fp, "showcalc=%d\n", gshowcalc);
+		}
+	}
+
+	// close the file
+	fclose(fp);
+
+	// The code below will only execute if the execvp() call fails
+	perror("execvp");
+	restart_program(NULL, pm);
 	}

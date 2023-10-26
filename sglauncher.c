@@ -18,7 +18,6 @@ for(int i = 1; i < argc; i++)
 
 readconf();
 
-
 	gtk_init(&argc, &argv);
 	char local_app_dir[1024] = "";
 	sprintf(local_app_dir, "%s/.local/share/applications", home_dir);
@@ -43,12 +42,11 @@ readconf();
 		g_object_unref(icon);
 		g_object_unref(info);
 	}
-	
-	// Create the header bar
+
 	headerbar = gtk_header_bar_new();
 	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
 
-	// Create the button with an icon
+
 	entry = gtk_entry_new();
 
 	GtkWidget *button = gtk_menu_button_new();
@@ -63,37 +61,34 @@ readconf();
 	gtk_widget_set_vexpand(GTK_WIDGET(entry), TRUE);
 
 
-	// Create the submenu
+
 	submenu = gtk_menu_new();
 
-	// Create the submenu items
+
 	submenu_item1 = gtk_menu_item_new_with_label("Open Settings");
 	submenu_item3 = gtk_menu_item_new_with_label("About");
-	// Add the submenu items to the submenu
+
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item1);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item3);
 
-	// Show all the submenu items
+
 	gtk_widget_show_all(submenu);
 
-	// Connect the button to the submenu
+
 	gtk_menu_button_set_popup(GTK_MENU_BUTTON(button), submenu);
 	
 
 		if (nocsd == 0)
 	{
-	// Add the header bar to the main window
 		gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
 	gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
 	}
 
-	// Create a scrolled window widget and set its properties
+
 	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
-								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-
-	// Create a list box widget and set its properties
 	GtkWidget *listbox = gtk_list_box_new();
 	gtk_list_box_set_selection_mode(GTK_LIST_BOX(listbox), GTK_SELECTION_SINGLE);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), listbox);

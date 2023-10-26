@@ -6,7 +6,7 @@ CC = gcc
 
 CFLAGS = `pkg-config --cflags gtk+-3.0`
 
-LIBS = `pkg-config --libs gtk+-3.0` -lm
+LIBS = `pkg-config --libs gtk+-3.0`
 
 # File names
 
@@ -22,11 +22,11 @@ all: $(EXE)
 
 sglauncher: sglauncher.o
 
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
 
 sglauncher-cfg: sglauncher-cfg.o
 
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
 
 # Debug step
 
