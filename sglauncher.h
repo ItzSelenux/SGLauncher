@@ -73,7 +73,8 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 	size_t len = 0;
 	FILE *file = fopen(filename, "r");
 
-	if (!file) {
+	if (!file)
+	{
 		g_warning("Failed to open file: %s", filename);
 		return;
 	}

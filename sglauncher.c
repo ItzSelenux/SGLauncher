@@ -55,10 +55,8 @@ int main(int argc, char *argv[])
 	wtitle = gtk_label_new(NULL);
 	gtk_label_set_markup(GTK_LABEL(wtitle), "<b>SGLauncher</b>");
 	gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), wtitle);
-	gtk_widget_set_hexpand(GTK_WIDGET(entry), TRUE);
-	gtk_widget_set_vexpand(GTK_WIDGET(entry), TRUE);
-
-
+	gtk_widget_set_hexpand(GTK_WIDGET(entry), FALSE);
+	gtk_widget_set_vexpand(GTK_WIDGET(entry), FALSE);
 
 	submenu = gtk_menu_new();
 
