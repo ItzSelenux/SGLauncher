@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-	GtkWidget *listbox = gtk_list_box_new();
+	listbox = gtk_list_box_new();
 	gtk_list_box_set_selection_mode(GTK_LIST_BOX(listbox), GTK_SELECTION_SINGLE);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), listbox);
 	gtk_widget_grab_focus(entry);
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 	mathtext = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 	GtkWidget *math = gtk_label_new("Math Answer: ");
 	label = gtk_label_new("");
-	pr = gtk_label_new("Press Enter to Run entry on background");
+	pr = gtk_label_new("Press Enter to Run first item, or down to select another item");
 
 	if (showcalc == 1)
 	{

@@ -19,12 +19,11 @@ gboolean gshowcmd, gshowcalc, gshowweb;
 GtkWidget *window, *grid, *cmd_row, *dialog, *web_row, *entry, *label, *mathtext, *listbox2,
 *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
 *submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
-*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn;
+*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn, *listbox;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;
 GdkPixbuf *icon;
-
 
 
 void restart_program(GtkWidget *widget, gpointer data)
@@ -36,7 +35,6 @@ void restart_program(GtkWidget *widget, gpointer data)
 
 double evaluate(char* expression) 
 {
-
 	gtk_widget_show(mathtext);
 	char* endptr;
 	double result = strtod(expression, &endptr);
@@ -127,7 +125,6 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 	fclose(file);
 	g_free(line);
 }
-
 
 void load_apps(GtkListBox *listbox)
 {
@@ -228,60 +225,9 @@ void load_apps(GtkListBox *listbox)
 	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(listbox));
-	
 }
 
-gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) 
-{
-	const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
-	if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_q && (event->state & GDK_CONTROL_MASK))) 
-	{
-		gtk_main_quit();
-		return TRUE;
-	}
-	else if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_m && (event->state & GDK_CONTROL_MASK))) 
-	{
-		if (strlen(text) > 0 && !isdigit(text[0])) 
-		{
-			GError *error = NULL;
-			GPid pid;
-			gint exit_status = 0;
-			gboolean success = g_spawn_async_with_pipes(NULL,
-				(gchar * []) {(gchar *) text, NULL},
-				NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
-			if (!success)
-			{
-				g_warning("Failed to start program: %s", error->message);
-				gchar **args = g_strsplit(text, " ", -1);
 
-				// Spawn a new process asynchronously with the command and its arguments
-				GError *error = NULL;
-				gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
-				if (!success) 
-				{
-					g_warning("Failed to launch process: %s", error->message);
-					g_error_free(error);
-				}
-				else
-				{
-					g_spawn_close_pid(pid);
-					gtk_main_quit();
-				}
-			}
-			else if (success)
-			{
-				gtk_main_quit();
-				g_spawn_close_pid(pid);
-			}
-		}
-	}
-	else if(event->keyval == GDK_KEY_Down && gtk_widget_has_focus(entry))
-	{
-		gtk_widget_grab_focus(row);
-		gtk_widget_set_state_flags(row, GTK_STATE_FLAG_SELECTED, TRUE);
-	}
-	return FALSE;
-}
 
 void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata) 
 {
@@ -303,18 +249,11 @@ void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata)
 void on_submenu_item1_selected(GtkMenuItem *menuitem, gpointer userdata) 
 {
 	if (access("/usr/bin/sglauncher-cfg", F_OK) == 0) 
-	{
 		system("/usr/bin/sglauncher-cfg");
-	}
-	else if
-	(access("./sglauncher-cfg", F_OK) == 0) 
-	{
+	else if (access("./sglauncher-cfg", F_OK) == 0) 
 		system("./sglauncher-cfg");
-	} 
 	else 
-	{
 		printf("\033[1;31mERROR\033[0m: sglauncher-cfg not detected, please reinstall this program\n");
-	}
 }
 
 void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
@@ -394,9 +333,9 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 	}
 	else if ((void*)selected_row == (void*)web_row)
 	{
-		   char command[256];
-			sprintf(command, "xdg-open %s%s", webengine, text);
-	// execute the command
+		char command[256];
+		sprintf(command, "xdg-open %s%s", webengine, text);
+
 	printf(command);
 	system(command);
 	gtk_main_quit();
@@ -404,17 +343,25 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 }
 
 
-void filter_listbox(GtkEntry *entry, GtkListBox *listbox) 
+GtkWidget* filter_listbox(GtkEntry *entry, GtkListBox *listbox) 
 {
 	const gchar *text = gtk_entry_get_text(entry);
 	GList *children = gtk_container_get_children(GTK_CONTAINER(listbox));
 	GList *iter;
+	GtkWidget *firstVisibleRow = NULL;
+
 	for (iter = children; iter != NULL; iter = iter->next) 
 	{
-		GtkWidget *row = iter->data;
+		GtkWidget *row = GTK_WIDGET(iter->data);
 		const gchar *name = gtk_widget_get_name(row);
-		if (name != NULL && strstr(name, text) != NULL) 
+
+		if (name != NULL && strcasestr(name, text) != NULL) 
 		{
+			if (firstVisibleRow == NULL)
+			{
+				firstVisibleRow = row;
+			}
+
 			gtk_widget_show(row);
 			gtk_widget_hide(listbox2);
 			gtk_widget_hide(mathtext);
@@ -426,6 +373,8 @@ void filter_listbox(GtkEntry *entry, GtkListBox *listbox)
 			gtk_widget_show(listbox2);
 		}
 	}
+
+	g_list_free(children);
 
 	if (strlen(text) > 0 && isdigit(text[0])) 
 	{
@@ -440,13 +389,86 @@ void filter_listbox(GtkEntry *entry, GtkListBox *listbox)
 		gtk_label_set_text(GTK_LABEL(label), "");
 		gtk_widget_show(pr);
 	}
+
+	return firstVisibleRow;
+}
+
+gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) 
+{
+	const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
+	if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_q && (event->state & GDK_CONTROL_MASK))) 
+	{
+		gtk_main_quit();
+		return TRUE;
+	}
+	else if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_m && (event->state & GDK_CONTROL_MASK))) 
+	{
+		if (strlen(text) > 0 && !isdigit(text[0])) 
+		{
+			GError *error = NULL;
+			GPid pid;
+			gint exit_status = 0;
+			gboolean success = g_spawn_async_with_pipes(NULL,
+				(gchar * []) {(gchar *) text, NULL},
+				NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
+			if (!success)
+			{
+				g_warning("Failed to start program: %s", error->message);
+				gchar **args = g_strsplit(text, " ", -1);
+
+				// Spawn a new process asynchronously with the command and its arguments
+				GError *error = NULL;
+				gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
+				if (!success) 
+				{
+					g_warning("Failed to launch process: %s", error->message);
+					g_error_free(error);
+				}
+				else
+				{
+					g_spawn_close_pid(pid);
+					gtk_main_quit();
+				}
+			}
+			else if (success)
+			{
+				gtk_main_quit();
+				g_spawn_close_pid(pid);
+			}
+		}
+	}
+	else if(event->keyval == GDK_KEY_Return && gtk_widget_has_focus(entry))
+	{
+		GtkWidget *firstVisibleRow = filter_listbox(GTK_ENTRY(entry), GTK_LIST_BOX(listbox));
+		if (firstVisibleRow != NULL)
+		{
+		gtk_widget_activate(firstVisibleRow);
+		}
+		else
+		{
+		gtk_widget_grab_focus(GTK_WIDGET(entry));
+		}
+	}
+	else if(event->keyval == GDK_KEY_Down && gtk_widget_has_focus(entry))
+	{
+		GtkWidget *firstVisibleRow = filter_listbox(GTK_ENTRY(entry), GTK_LIST_BOX(listbox));
+		if (firstVisibleRow != NULL)
+		{
+		gtk_widget_grab_focus(firstVisibleRow);
+		}
+		else
+		{
+		gtk_widget_grab_focus(GTK_WIDGET(entry));
+		}
+	}
+		
+	return FALSE;
 }
 
 void readconf()
 {
 	//READ THE CONF
 	/////////////////////////////////////////
-
 	char *cwengine;
 	cwengine = " ";
 	if (home_dir == NULL)
@@ -484,13 +506,13 @@ void readconf()
 
 		fclose(default_conf);
 		printf("Default configuration file copied to %s.\n", config_file_path);
+		}
+		else
+		{
+			fclose(file);
+			printf("%s exists and can be read.\n", config_file_path);
+		}
 	}
-	else
-	{
-		fclose(file);
-		printf("%s exists and can be read.\n", config_file_path);
-	}
-}
 
 
 	char line[ML];
@@ -502,54 +524,44 @@ void readconf()
 			char *name = strtok(line, "=");
 			char *value_str = strtok(NULL, "=");
 
-			if (file != NULL)
+			if (name != NULL && value_str != NULL)
 			{
-				// Read each line from the file and parse the variable assignments
-				while (fgets(line, ML, file) != NULL)
+				// Set the value of the corresponding variable based on the name
+				if (strcmp(name, "order") == 0) 
 				{
-					char *name = strtok(line, "=");
-					char *value_str = strtok(NULL, "=");
-					if (name != NULL && value_str != NULL)
-					{
-						// Set the value of the corresponding variable based on the name
-						if (strcmp(name, "order") == 0) 
-						{
-							order = atoi(value_str);
-						} 
-						else if (strcmp(name, "cengine") == 0) 
-						{
-							strncpy(cengine, value_str, sizeof(cengine));
-							cengine[sizeof(cengine)-1] = '\0'; // Ensure null-terminated
-						} 
-						else if (strcmp(name, "wengine") == 0)
-						{
-							wengine = atoi(value_str);
-						} 
-						else if (strcmp(name, "showweb") == 0) 
-						{
-							showweb = atoi(value_str);
-						} 
-						else if (strcmp(name, "showcmd") == 0) 
-						{
-							showcmd = atoi(value_str);
-						} 
-						else if (strcmp(name, "showcalc") == 0) 
-						{
-							showcalc = atoi(value_str);
-						}
-					}
+					order = atoi(value_str);
+				} 
+				else if (strcmp(name, "cengine") == 0) 
+				{
+					strncpy(cengine, value_str, sizeof(cengine));
+					cengine[sizeof(cengine)-1] = '\0'; // Ensure null-terminated
+				} 
+				else if (strcmp(name, "wengine") == 0)
+				{
+					wengine = atoi(value_str);
+				} 
+				else if (strcmp(name, "showweb") == 0) 
+				{
+					showweb = atoi(value_str);
+				} 
+				else if (strcmp(name, "showcmd") == 0) 
+				{
+					showcmd = atoi(value_str);
+				} 
+				else if (strcmp(name, "showcalc") == 0) 
+				{
+					showcalc = atoi(value_str);
 				}
 			}
 		}
-		fclose(file); // Close the file
+		fclose(file);
 	}
 	else
 	{
 		printf("Error opening file");
 	}
 
-
-		if (wengine == 0 )
+	if (wengine == 0 )
 	{
 		webengine = "https://duckduckgo.com/?q=";
 	}
@@ -566,13 +578,12 @@ void readconf()
 		webengine = cengine;
 	}
 
-
 	// Use the values that were read from the file
 	printf("WebEngine: %s\nOrder: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showcmd, showweb, showcalc);
-	////////////////////////////////////////
 }
 
- void on_webcombo_changed(GtkComboBox *webcombo, gpointer user_data) {
+void on_webcombo_changed(GtkComboBox *webcombo, gpointer user_data)
+{
 	active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo));
 	GtkWidget *webctm = GTK_WIDGET(user_data);
 	GtkWidget *webctmlb = GTK_WIDGET(g_object_get_data(G_OBJECT(webctm), "webctmlb"));
@@ -709,10 +720,7 @@ void on_apply_button_clicked(GtkButton *button, gpointer user_data)
 		}
 	}
 
-	// close the file
 	fclose(fp);
-
-	// The code below will only execute if the execvp() call fails
 	perror("execvp");
 	restart_program(NULL, pm);
 }
