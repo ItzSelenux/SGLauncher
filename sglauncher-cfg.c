@@ -98,7 +98,7 @@ const char *web_ctm = gtk_entry_get_text(GTK_ENTRY(webctm));
 
 
 
-
+ 
 //SET Options STATUS
 if (showcmd == 1)
 {

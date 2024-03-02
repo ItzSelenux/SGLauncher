@@ -1,29 +1,27 @@
 #include "sglauncher.h"
 int main(int argc, char *argv[]) 
 {
-home_dir = getenv("HOME");
-int nocsd = 0;
+	const char* env_sgcsd = getenv("SGCSD");
+	home_dir = getenv("HOME");
+	int nocsd = 0;
+	
+	
+	nocsd = (env_sgcsd != NULL) ? atoi(env_sgcsd) == 0 : 0;
+	for(int i = 1; i < argc; i++)
+		{
+			if(strcmp(argv[i], "--nocsd") == 0)
+			{
+			nocsd = 1;
+			printf("CSD Disabled, using fallback display \n");
+			}
+		}
 
-
-for(int i = 1; i < argc; i++)
-{
-	if(strcmp(argv[i], "--nocsd") == 0)
-	{
-		nocsd = 1;
-		printf("CSD Disabled, using fallback display \n");
-	}
-}
-
-
-
-readconf();
+	readconf();
 
 	gtk_init(&argc, &argv);
 	char local_app_dir[1024] = "";
 	sprintf(local_app_dir, "%s/.local/share/applications", home_dir);
-	sprintf(local_app_dir, "%s/.local/share/sglauncher/quickaccess", home_dir);
 	app_dirs[2] = local_app_dir;
-	quick_dirs[0] = local_app_dir;
 
 
 	listbox2 = gtk_list_box_new();
@@ -78,10 +76,10 @@ readconf();
 	gtk_menu_button_set_popup(GTK_MENU_BUTTON(button), submenu);
 	
 
-		if (nocsd == 0)
+	if (nocsd == 0)
 	{
 		gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
-	gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
+		gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
 	}
 
 
@@ -93,46 +91,44 @@ readconf();
 	gtk_list_box_set_selection_mode(GTK_LIST_BOX(listbox), GTK_SELECTION_SINGLE);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), listbox);
 	gtk_widget_grab_focus(entry);
-	
-	
+
 	// Create a new GtkListBoxRow
-cmd_row = gtk_list_box_row_new();
-GtkWidget *cmd_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-gtk_container_add(GTK_CONTAINER(cmd_row), cmd_box);
-
-// Create a GtkImage widget and set its icon with a size limit of 32x32
-GtkWidget *cmdicon = gtk_image_new_from_icon_name("terminal-tango", GTK_ICON_SIZE_BUTTON);
-gtk_box_pack_start(GTK_BOX(cmd_box), cmdicon, FALSE, FALSE, 0);
-
-// Create a GtkLabel widget for the app name and set its text
-GtkWidget *cmdrun = gtk_label_new("Run in Terminal");
-gtk_box_pack_start(GTK_BOX(cmd_box), cmdrun, FALSE, FALSE, 0);
-
-web_row = gtk_list_box_row_new();
-GtkWidget *web_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-gtk_container_add(GTK_CONTAINER(web_row), web_box);
-
-// Create a GtkImage widget and set its icon with a size limit of 32x32
-GtkWidget *webicon = gtk_image_new_from_icon_name("edit-find", GTK_ICON_SIZE_BUTTON);
-gtk_box_pack_start(GTK_BOX(web_box), webicon, FALSE, FALSE, 0);
-
-// Create a GtkLabel widget for the app name and set its text
-GtkWidget *webrun = gtk_label_new("Search on Web");
-gtk_box_pack_start(GTK_BOX(web_box), webrun, FALSE, FALSE, 0);
-
-// Add the new GtkListBoxRow to the GtkListBox
-
-if (showcmd == 1)
-{
-gtk_list_box_insert(GTK_LIST_BOX(listbox2), cmd_row, -1);
-}
-
-if (showweb == 1)
-{
-gtk_list_box_insert(GTK_LIST_BOX(listbox2), web_row, -1);
-}
-gtk_widget_set_size_request(web_row, -1, 32);
-gtk_widget_set_size_request(cmd_row, -1, 32);
+	cmd_row = gtk_list_box_row_new();
+	GtkWidget *cmd_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_container_add(GTK_CONTAINER(cmd_row), cmd_box);
+	
+	// Create a GtkImage widget and set its icon with a size limit of 32x32
+	GtkWidget *cmdicon = gtk_image_new_from_icon_name("terminal-tango", GTK_ICON_SIZE_BUTTON);
+	gtk_box_pack_start(GTK_BOX(cmd_box), cmdicon, FALSE, FALSE, 0);
+	
+	// Create a GtkLabel widget for the app name and set its text
+	GtkWidget *cmdrun = gtk_label_new("Run in Terminal");
+	gtk_box_pack_start(GTK_BOX(cmd_box), cmdrun, FALSE, FALSE, 0);
+	
+	web_row = gtk_list_box_row_new();
+	GtkWidget *web_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_container_add(GTK_CONTAINER(web_row), web_box);
+	
+	// Create a GtkImage widget and set its icon with a size limit of 32x32
+	GtkWidget *webicon = gtk_image_new_from_icon_name("edit-find", GTK_ICON_SIZE_BUTTON);
+	gtk_box_pack_start(GTK_BOX(web_box), webicon, FALSE, FALSE, 0);
+	
+	// Create a GtkLabel widget for the app name and set its text
+	GtkWidget *webrun = gtk_label_new("Search on Web");
+	gtk_box_pack_start(GTK_BOX(web_box), webrun, FALSE, FALSE, 0);
+	
+	// Add the new GtkListBoxRow to the GtkListBox
+	if (showcmd == 1)
+	{
+		gtk_list_box_insert(GTK_LIST_BOX(listbox2), cmd_row, -1);
+	}
+	
+	if (showweb == 1)
+	{
+		gtk_list_box_insert(GTK_LIST_BOX(listbox2), web_row, -1);
+	}
+	gtk_widget_set_size_request(web_row, -1, 32);
+	gtk_widget_set_size_request(cmd_row, -1, 32);
 
 
 	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), row);
@@ -188,15 +184,13 @@ gtk_widget_set_size_request(cmd_row, -1, 32);
 	gtk_grid_attach(GTK_GRID(grid), pr, 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
 
-
-
-gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-load_apps(GTK_LIST_BOX(listbox));
-gtk_widget_show_all(window);
-gtk_widget_hide(mathtext);
-gtk_widget_hide(listbox2);
-gtk_widget_hide(pr);
-gtk_main();
+	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	load_apps(GTK_LIST_BOX(listbox));
+	gtk_widget_show_all(window);
+	gtk_widget_hide(mathtext);
+	gtk_widget_hide(listbox2);
+	gtk_widget_hide(pr);
+	gtk_main();
 return 0;
 }
 
