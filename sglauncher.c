@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(cmd_box), cmdrun, FALSE, FALSE, 0);
 	
 	web_row = gtk_list_box_row_new();
-	GtkWidget *web_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	web_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 	gtk_container_add(GTK_CONTAINER(web_row), web_box);
 	
 	// Create a GtkImage widget and set its icon with a size limit of 32x32

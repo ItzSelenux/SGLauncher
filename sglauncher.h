@@ -19,7 +19,7 @@ gboolean gshowcmd, gshowcalc, gshowweb;
 GtkWidget *window, *grid, *cmd_row, *dialog, *web_row, *entry, *label, *mathtext, *listbox2,
 *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
 *submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
-*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn, *listbox;
+*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn, *listbox, *web_box;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;
@@ -301,6 +301,7 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 					gtk_dialog_run(GTK_DIALOG(dialog));
 					gtk_widget_destroy(dialog);
 				}
+			gtk_main_quit();
 			}
 
 			free(full_path);
@@ -461,7 +462,15 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 		gtk_widget_grab_focus(GTK_WIDGET(entry));
 		}
 	}
-		
+	else if((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_b))
+	{
+		gtk_widget_activate(web_row);
+	}
+	else if((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_t))
+	{
+		gtk_widget_activate(cmd_row);
+	}
+
 	return FALSE;
 }
 
