@@ -60,10 +60,12 @@ int main(int argc, char *argv[])
 
 	submenu = gtk_menu_new();
 
-	submenu_item1 = gtk_menu_item_new_with_label("Open Settings");
+	submenu_item1 = gtk_menu_item_new_with_label("Settings");
+	submenu_item2 = gtk_menu_item_new_with_label("Help");
 	submenu_item3 = gtk_menu_item_new_with_label("About");
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item1);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item2);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item3);
 
 
@@ -130,11 +132,12 @@ int main(int argc, char *argv[])
 
 	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), row);
 	g_signal_connect(submenu_item1, "activate", G_CALLBACK(on_submenu_item1_selected), NULL);
+	g_signal_connect(submenu_item2, "activate", G_CALLBACK(on_submenu_item2_selected), NULL);
 	g_signal_connect(submenu_item3, "activate", G_CALLBACK(on_submenu_item3_selected), NULL);
 	g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
 	g_signal_connect(listbox, "row-activated", G_CALLBACK(on_item_activated), NULL);
 	g_signal_connect(entry, "changed", G_CALLBACK(filter_listbox), listbox);
-
+	g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
 
 
 	// Load apps into the list box

@@ -12,19 +12,18 @@ const char* app_dirs[] = {"/usr/share/applications", "", NULL};
 const char* quick_dirs[] = {NULL};
 const char* pver = mver;
 char *pm, *webengine, *cwengine, cengine[ML], *home_dir, config_file_path[256];
-int wengine, order, showweb, showcmd, showcalc;
+int wengine, order, showweb, showcmd, showcalc, showda;
 
-gboolean gshowcmd, gshowcalc, gshowweb;
+gboolean gshowcmd, gshowcalc, gshowweb, gshowda;
 
 GtkWidget *window, *grid, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext, *listbox2,
 *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
 *submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
-*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn, *listbox, *web_box;
+*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn, *listbox, *web_box, *wshowda;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;
 GdkPixbuf *icon;
-
 
 void restart_program(GtkWidget *widget, gpointer data)
 {
@@ -242,7 +241,6 @@ void load_apps(GtkListBox *listbox)
 										*pos = '\0';
 									}
 									gchar *exec_value = g_strdup(exec_line + 5);
-									g_print(exec_value);
 								}
 								gchar *search_str = g_strdup_printf("%s,%s[%s", app_name ? app_name : "", path, action_name);
 
@@ -284,7 +282,8 @@ void load_apps(GtkListBox *listbox)
 
 					char query[4096];
 					sprintf(query, "%s%s%s", app_name ? app_name : "", path, icon_name ? icon_name : "");
-					gtk_widget_set_name(row, path);
+					gchar *search_str2 = g_strdup_printf("%s%s,%s[", app_name ? app_name : "", icon_name, path);
+					gtk_widget_set_name(row, search_str2);
 					
 					GtkIconTheme *theme = gtk_icon_theme_get_default();
 					GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
@@ -325,7 +324,6 @@ void load_apps(GtkListBox *listbox)
 void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata) 
 {
 	dialog = gtk_about_dialog_new();
-
 	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher");
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2023 ItzSelenux for Simple GTK Desktop Environment");
 	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
@@ -336,6 +334,17 @@ void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata)
 	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),"menulibre");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+}
+
+void on_submenu_item2_selected(GtkMenuItem *menuitem, gpointer userdata) 
+{
+	GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(window), "Help");
+		gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
+		gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+		GtkWidget *label = gtk_label_new("- SGLauncher is a quick launcher that can run programs, desktop actions, run on terminal or search on web\n - You can run the first item on the list by pressing enter, or press down to select other item \n - You can press CTRL+T to run on terminal and CTRL+B to Search on Web\n - You can customize the program in the Settings or editing the config file on ~/.config/sglauncher.conf");
+	gtk_container_add(GTK_CONTAINER(window), label);
+	gtk_widget_show_all(window);
 }
 
 void on_submenu_item1_selected(GtkMenuItem *menuitem, gpointer userdata) 
@@ -355,9 +364,7 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 	if ((void*)selected_row == (void*)cmd_row) 
 	{
 		int found = 0;
-		char *path = getenv("PATH");
-		char *path_copy = strdup(path);
-		char *dir = strtok(path_copy, ":");
+		char *path = getenv("PATH"), *path_copy = strdup(path), *dir = strtok(path_copy, ":");
 
 		while (dir != NULL && !found) 
 		{
@@ -427,7 +434,7 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 	else if ((void*)selected_row == (void*)web_row)
 	{
 		char command[256];
-		sprintf(command, "xdg-open %s%s", webengine, text);
+		sprintf(command, "xdg-open '%s=%s'", webengine, text);
 
 	printf(command);
 	system(command);
@@ -566,10 +573,20 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 	return FALSE;
 }
 
+gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+	if (event->type == GDK_BUTTON_PRESS && event->button == 3)
+	{
+		GtkWidget *submenu = GTK_WIDGET(data);
+		gtk_menu_popup_at_pointer(GTK_MENU(submenu), NULL);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 void readconf()
 {
 	//READ THE CONF
-	/////////////////////////////////////////
 	char *cwengine;
 	cwengine = " ";
 	if (home_dir == NULL)
@@ -588,7 +605,7 @@ void readconf()
 		FILE *default_conf = fopen("/etc/sglauncher.conf", "r");
 		if (default_conf == NULL)
 		{
-			fprintf(stderr, "Error: could not open default configuration file /etc/sgconfig.conf, please reinstall the program or put a config file in ~/.config/sglauncher.conf.\n");
+			fprintf(stderr, "Error: could not open default configuration file /etc/sglauncher.conf, please reinstall the program or put a config file in ~/.config/sglauncher.conf.\n");
 			exit(1);
 		}
 
@@ -615,7 +632,6 @@ void readconf()
 		}
 	}
 
-
 	char line[ML];
 	if (file != NULL)
 	{
@@ -627,32 +643,20 @@ void readconf()
 
 			if (name != NULL && value_str != NULL)
 			{
-				// Set the value of the corresponding variable based on the name
 				if (strcmp(name, "order") == 0) 
-				{
 					order = atoi(value_str);
-				} 
 				else if (strcmp(name, "cengine") == 0) 
-				{
 					strncpy(cengine, value_str, sizeof(cengine));
-					cengine[sizeof(cengine)-1] = '\0'; // Ensure null-terminated
-				} 
 				else if (strcmp(name, "wengine") == 0)
-				{
 					wengine = atoi(value_str);
-				} 
 				else if (strcmp(name, "showweb") == 0) 
-				{
 					showweb = atoi(value_str);
-				} 
 				else if (strcmp(name, "showcmd") == 0) 
-				{
 					showcmd = atoi(value_str);
-				} 
 				else if (strcmp(name, "showcalc") == 0) 
-				{
 					showcalc = atoi(value_str);
-				}
+				else if (strcmp(name, "showda") == 0) 
+					showda = atoi(value_str);
 			}
 		}
 		fclose(file);
@@ -663,24 +667,16 @@ void readconf()
 	}
 
 	if (wengine == 0 )
-	{
-		webengine = "https://duckduckgo.com/?q=";
-	}
+		webengine = "https://duckduckgo.com/?q";
 	else if (wengine == 1 )
-	{
-		webengine = "https://www.google.com/search?q=";
-	}
+		webengine = "https://www.google.com/search?q";
 	else if (wengine == 2 )
-	{
-		webengine = "https://www.bing.com/search?q=";
-	}
+		webengine = "https://www.bing.com/search?q";
 	else if (wengine == 3 )
-	{
 		webengine = cengine;
-	}
 
 	// Use the values that were read from the file
-	printf("WebEngine: %s\nOrder: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showcmd, showweb, showcalc);
+	printf("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showda, showcmd, showweb, showcalc);
 }
 
 void on_webcombo_changed(GtkComboBox *webcombo, gpointer user_data)
@@ -724,7 +720,6 @@ void on_default_button_clicked(GtkButton *button, gpointer user_data)
 		char command[100];
 		sprintf(command, "cp %s %s%s", source_file, home_dir, destination_file);
 		system(command);
-   
 		restart_program(NULL, pm);
 
 	}
@@ -740,86 +735,61 @@ void on_apply_button_clicked(GtkButton *button, gpointer user_data)
 	gshowcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
 	gshowweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
 	gshowcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
-	const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo));  
-	const gchar *active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder));   
+	gshowda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
+	const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
+		*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
+		*ncengine,
+		*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
+		*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
+
+	if (entry_text && strlen(entry_text) > 0)
+		ncengine = entry_text;
+	else
+		ncengine = placeholder_text;
+
+	g_print(ncengine);
 	cweb = NULL;
 	cwebng = gtk_entry_get_text(GTK_ENTRY(webctm));
 	corder = NULL;
 	if (active_text != NULL) 
 	{
 		if (g_strcmp0(active_text, "Google") == 0) 
-		{
 			cweb = "1";
-		} 
 		else if (g_strcmp0(active_text, "DuckDuckGo") == 0) 
-		{
 			cweb = "0";
-		} 
 		else if (g_strcmp0(active_text, "Bing") == 0) 
-		{
 			cweb = "2";
-		} 
 		else if (g_strcmp0(active_text, "Custom") == 0) 
-		{
 			cweb = "3";
-		}
-	if (active_order != NULL) 
+
+		if (active_order != NULL) 
 		{
 			if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) 
-			{
-				corder = "0";
-			}
-			else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) 
-			{
 				corder = "1";
-			}
+			else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) 
+				corder = "0";
 			else if (g_strcmp0(active_order, "Vertical - Apps at left") == 0) 
-			{
 				corder = "2";
-			}
 			else if (g_strcmp0(active_order, "Vertical - Apps at right") == 0) 
-			{
 				corder = "3";
-			}
 		}
 	}
-	FILE *fp = fopen(config_file_path, "r+");
+	
+	FILE *fp = fopen(config_file_path, "w+");
 	if (fp == NULL)
 	{
 		perror("Failed to open config file");
 		exit(EXIT_FAILURE);
 	}
 
-	char line[ML];
-	while (fgets(line, ML, fp) != NULL) 
-	{
-		if (strncmp(line, "order=", 6) == 0) 
-		{
-			fseek(fp, -strlen(line), SEEK_CUR);
-			fprintf(fp, "order=%s\n", corder);
-		}
-		else if (strncmp(line, "wengine=", 8) == 0) 
-		{
-			fseek(fp, -strlen(line), SEEK_CUR);
-			fprintf(fp, "wengine=%s\n", cweb);
-		}
-		else if (strncmp(line, "showweb=", 8) == 0) 
-		{
-			fseek(fp, -strlen(line), SEEK_CUR);
-			fprintf(fp, "showweb=%d\n", gshowweb);
-		}
-		else if (strncmp(line, "showcmd=", 8) == 0) 
-		{
-
-			fseek(fp, -strlen(line), SEEK_CUR);
-			fprintf(fp, "showcmd=%d\n", gshowcmd);
-		}
-		else if (strncmp(line, "showcalc=", 9) == 0) 
-		{
-			fseek(fp, -strlen(line), SEEK_CUR);
-			fprintf(fp, "showcalc=%d\n", gshowcalc);
-		}
-	}
+	fprintf(fp, "[SGLauncher Configuration File]\n");
+	fprintf(fp, "cengine=%s\n", ncengine);
+	fprintf(fp, "wengine=%s\n", cweb);
+	fprintf(fp, "order=%s\n", corder);
+	fprintf(fp, "showda=%d\n", gshowda);
+	fprintf(fp, "showweb=%d\n", gshowweb);
+	fprintf(fp, "showcmd=%d\n", gshowcmd);
+	fprintf(fp, "showcalc=%d\n", gshowcalc);
 
 	fclose(fp);
 	perror("execvp");
