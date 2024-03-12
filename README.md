@@ -1,19 +1,19 @@
 # SGLauncher
 Simple GTK Launcher
 
-## Features: 
+## Features:
 
 - [x] Show system menu apps
 - [x] Search On Web button
-- [x] Run In Terminal button 
+- [x] Run In Terminal button
 - [x] Show calc answers
+- [x] Show Actions
 
 - [ ] have quick access buttons
 - [ ] have a simple configuration tool
-- [ ] Show Actions
 
 
-## Build 
+## Build
 Main Program:
 
 ```

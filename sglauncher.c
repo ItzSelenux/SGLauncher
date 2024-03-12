@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
 
 	submenu = gtk_menu_new();
 
-
 	submenu_item1 = gtk_menu_item_new_with_label("Open Settings");
 	submenu_item3 = gtk_menu_item_new_with_label("About");
 
@@ -144,13 +143,14 @@ int main(int argc, char *argv[])
 	// Set the vertical expand of the scrolled window to fill the available space
 	mathtext = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 	GtkWidget *math = gtk_label_new("Math Answer: ");
-	label = gtk_label_new("");
+	manswer = gtk_label_new("");
+	gtk_label_set_selectable(GTK_LABEL(manswer), TRUE);
 	pr = gtk_label_new("Press Enter to Run first item, or down to select another item");
 
 	if (showcalc == 1)
 	{
 		gtk_box_pack_start(GTK_BOX(mathtext), math, TRUE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(mathtext), label, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(mathtext), manswer, TRUE, TRUE, 0);
 	}
 
 	gtk_widget_set_vexpand(scrolled_window, TRUE);
