@@ -286,16 +286,29 @@ void load_apps(GtkListBox *listbox)
 					gtk_widget_set_name(row, search_str2);
 					
 					GtkIconTheme *theme = gtk_icon_theme_get_default();
-					GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
-					GdkPixbuf *licon = gtk_icon_info_load_icon(info, NULL);
+					GdkPixbuf *icon_pixbuf = NULL;
 
-					if (licon != NULL)
+					if (icon_name != NULL && strstr(icon_name, "/") != NULL)
 					{
-						GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(licon, 16, 16, GDK_INTERP_BILINEAR);
+						icon_pixbuf = gdk_pixbuf_new_from_file(icon_name, NULL);
+					}
+					else if (icon_name != NULL)
+					{
+						GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
+						if (info != NULL)
+						{
+							icon_pixbuf = gtk_icon_info_load_icon(info, NULL);
+							g_object_unref(info);
+						}
+					}
+
+					if (icon_pixbuf != NULL)
+					{
+						GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, 16, 16, GDK_INTERP_BILINEAR);
 						GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
 						gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
 						g_object_unref(resized_icon);
-						g_object_unref(licon);
+						g_object_unref(icon_pixbuf);
 					}
 					else
 					{
