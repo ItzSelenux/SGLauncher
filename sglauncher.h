@@ -176,7 +176,6 @@ void load_apps(GtkListBox *listbox)
 {
 	AppDetails *app_details = NULL;
 	int num_apps = 0;
-	gboolean showda = TRUE;
 
 	for (int i = 0; i < sizeof(app_dirs) / sizeof(app_dirs[0]); i++)
 	{
