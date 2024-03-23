@@ -157,8 +157,27 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 	g_free(line);
 }
 
+
+typedef struct
+{
+	gchar *name;
+	gchar *icon;
+	gchar *path;
+}AppDetails;
+
+int compare_app_details(const void *a, const void *b)
+{
+	const AppDetails *app1 = (const AppDetails *)a;
+	const AppDetails *app2 = (const AppDetails *)b;
+	return strcmp(app1->name, app2->name);
+}
+
 void load_apps(GtkListBox *listbox)
 {
+	AppDetails *app_details = NULL;
+	int num_apps = 0;
+	gboolean showda = TRUE;
+
 	for (int i = 0; i < sizeof(app_dirs) / sizeof(app_dirs[0]); i++)
 	{
 		DIR *dir = opendir(app_dirs[i]);
@@ -167,10 +186,11 @@ void load_apps(GtkListBox *listbox)
 			struct dirent *ent;
 			while ((ent = readdir(dir)) != NULL)
 			{
-				if (ent->d_name[0] == '.')
+				if (ent->d_name[0] == '.' || strstr(ent->d_name, ".desktop") == NULL)
 				{
 					continue;
 				}
+
 				gchar *path = g_strdup_printf("%s/%s", app_dirs[i], ent->d_name);
 				FILE *file = fopen(path, "r");
 				if (file != NULL)
@@ -179,12 +199,12 @@ void load_apps(GtkListBox *listbox)
 					size_t len = 0;
 					gchar *icon_name = NULL;
 					gchar *app_name = NULL;
-					gboolean is_action = FALSE;
+					gboolean nodisplay = FALSE;
 					GtkWidget *row = NULL;
 
 					while (getline(&line, &len, file) != -1)
 					{
-						if (strstr(line, "Name=") == line && app_name == NULL && !is_action)
+						if (strstr(line, "Name=") == line && app_name == NULL)
 						{
 							gchar *pos = strchr(line + 5, '\n');
 							if (pos != NULL)
@@ -196,7 +216,7 @@ void load_apps(GtkListBox *listbox)
 								app_name = g_strdup(line + 5);
 							}
 						}
-						else if (strstr(line, "Icon=") == line && !is_action)
+						else if (strstr(line, "Icon=") == line)
 						{
 							gchar *pos = strchr(line + 5, '\n');
 							if (pos != NULL)
@@ -205,16 +225,18 @@ void load_apps(GtkListBox *listbox)
 							}
 							icon_name = g_strdup(line + 5);
 						}
-						else if (strstr(line, "[Desktop Action") == line)
+						else if (strstr(line, "NoDisplay=") == line)
 						{
-							is_action = TRUE;
+							nodisplay = TRUE;
+						}
+						else if (showda && strstr(line, "[Desktop Action") == line)
+						{
 							gchar *action_name_start = strchr(line, '[') + 1;
 							gchar *action_name_end = strchr(line, ']');
 							if (action_name_start != NULL && action_name_end != NULL)
 							{
 								*action_name_end = '\0';
 								gchar *action_name = g_strdup(action_name_start);
-
 								getline(&line, &len, file);
 								gchar *action_name_line = g_strstrip(line);
 								if (strstr(action_name_line, "Name=") == action_name_line)
@@ -229,10 +251,10 @@ void load_apps(GtkListBox *listbox)
 										action_name = g_strdup(action_name_line + 5);
 									}
 								}
-								
+
 								getline(&line, &len, file);
 								gchar *exec_line = g_strstrip(line);
-							
+								gchar *exec_value = NULL;
 								if (strstr(exec_line, "Exec=") == exec_line)
 								{
 									gchar *pos = strchr(exec_line + 5, '\n');
@@ -240,8 +262,9 @@ void load_apps(GtkListBox *listbox)
 									{
 										*pos = '\0';
 									}
-									gchar *exec_value = g_strdup(exec_line + 5);
+									exec_value = g_strdup(exec_line + 5);
 								}
+
 								gchar *search_str = g_strdup_printf("%s,%s[%s", app_name ? app_name : "", path, action_name);
 
 								GtkWidget *action_row = gtk_list_box_row_new();
@@ -266,6 +289,7 @@ void load_apps(GtkListBox *listbox)
 									GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
 									gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
 								}
+
 								GtkWidget *label = gtk_label_new(action_name);
 								gtk_box_pack_start(GTK_BOX(action_box), label, FALSE, FALSE, 0);
 								gtk_list_box_insert(GTK_LIST_BOX(listbox), action_row, -1);
@@ -273,54 +297,26 @@ void load_apps(GtkListBox *listbox)
 
 								g_free(search_str);
 								g_free(action_name);
+								g_free(exec_value);
 							}
 						}
 					}
-					row = gtk_list_box_row_new();
-					GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-					gtk_container_add(GTK_CONTAINER(row), box);
 
-					char query[4096];
-					sprintf(query, "%s%s%s", app_name ? app_name : "", path, icon_name ? icon_name : "");
-					gchar *search_str2 = g_strdup_printf("%s%s,%s[", app_name ? app_name : "", icon_name, path);
-					gtk_widget_set_name(row, search_str2);
-					
-					GtkIconTheme *theme = gtk_icon_theme_get_default();
-					GdkPixbuf *icon_pixbuf = NULL;
-
-					if (icon_name != NULL && strstr(icon_name, "/") != NULL)
+					if (!nodisplay && app_name != NULL)
 					{
-						icon_pixbuf = gdk_pixbuf_new_from_file(icon_name, NULL);
-					}
-					else if (icon_name != NULL)
-					{
-						GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
-						if (info != NULL)
-						{
-							icon_pixbuf = gtk_icon_info_load_icon(info, NULL);
-							g_object_unref(info);
-						}
-					}
-
-					if (icon_pixbuf != NULL)
-					{
-						GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, 16, 16, GDK_INTERP_BILINEAR);
-						GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
-						gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
-						g_object_unref(resized_icon);
-						g_object_unref(icon_pixbuf);
+						app_details = realloc(app_details, (num_apps + 1) * sizeof(AppDetails));
+						app_details[num_apps].name = app_name;
+						app_details[num_apps].icon = icon_name;
+						app_details[num_apps].path = path;
+						num_apps++;
 					}
 					else
 					{
-						GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
-						gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
+						g_free(app_name);
+						g_free(icon_name);
+						g_free(path);
 					}
-					GtkWidget *label = gtk_label_new(app_name);
-					gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-					gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
-					gtk_widget_set_size_request(box, -1, 32);
-					g_free(icon_name);
-					g_free(app_name);
+
 					fclose(file);
 				}
 			}
@@ -328,7 +324,54 @@ void load_apps(GtkListBox *listbox)
 		closedir(dir);
 	}
 
-	// Create a scrolled window and add the list box to it
+	qsort(app_details, num_apps, sizeof(AppDetails), compare_app_details);
+
+	for (int i = 0; i < num_apps; i++)
+	{
+		GtkWidget *row = gtk_list_box_row_new();
+		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+		gtk_container_add(GTK_CONTAINER(row), box);
+
+		GdkPixbuf *icon_pixbuf = NULL;
+		if (app_details[i].icon != NULL && strstr(app_details[i].icon, "/") != NULL)
+		{
+			icon_pixbuf = gdk_pixbuf_new_from_file(app_details[i].icon, NULL);
+		}
+		else if (app_details[i].icon != NULL)
+		{
+			GtkIconTheme *theme = gtk_icon_theme_get_default();
+			GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, app_details[i].icon, 16, 0);
+			if (info != NULL)
+			{
+				icon_pixbuf = gtk_icon_info_load_icon(info, NULL);
+				g_object_unref(info);
+			}
+		}
+
+		GtkWidget *icon;
+		if (icon_pixbuf != NULL)
+		{
+			GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, 16, 16, GDK_INTERP_BILINEAR);
+			icon = gtk_image_new_from_pixbuf(resized_icon);
+			g_object_unref(resized_icon);
+			g_object_unref(icon_pixbuf);
+		}
+		else
+		{
+			icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
+		}
+		gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
+
+		GtkWidget *label = gtk_label_new(app_details[i].name);
+		gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+		gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
+		gtk_widget_set_size_request(row, -1, 32);
+		char query[4096];
+			sprintf(query, "%s%s%s", app_details[i].name ? app_details[i].name : "", app_details[i].path, app_details[i].icon ? app_details[i].icon : "");
+			gchar *search_str2 = g_strdup_printf("%s%s,%s[", app_details[i].name ? app_details[i].name : "", app_details[i].icon, app_details[i].path);
+			gtk_widget_set_name(row, search_str2);
+	}
+	
 	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(listbox));
@@ -338,7 +381,7 @@ void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata)
 {
 	dialog = gtk_about_dialog_new();
 	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher");
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2023 ItzSelenux for Simple GTK Desktop Environment");
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2024 ItzSelenux for Simple GTK Desktop Environment");
 	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), pver);
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/sglauncher");
