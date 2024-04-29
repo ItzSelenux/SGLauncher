@@ -33,6 +33,7 @@ You can use the Settings (sglauncher-cfg) program to easily edit the values with
 | showweb | toggle show "Search on web option" | 0, 1 | 0: disabled <br> 1: eneable | showweb=1
 | showcmd | toggle show "Run In Terminal" | 0, 1 | 0: disabled <br> 1: eneable | showcmd=1
 | showcalc | toggle show answers of Math formula | 0, 1 | 0: disabled <br> 1: eneable | showcalc=1
+| showscientific | toggle show math answer in scientific format | 0, 1 | 0: disabled <br> 1: eneable | showscientific=1
 
 default config should be in /etc/sglauncher.conf, personal config in ~/.config/sglauncher
 

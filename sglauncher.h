@@ -12,14 +12,14 @@ const char* app_dirs[] = {"/usr/share/applications", "", NULL};
 const char* quick_dirs[] = {NULL};
 const char* pver = mver;
 char *pm, *webengine, *cwengine, cengine[ML], *home_dir, config_file_path[256];
-int wengine, order, showweb, showcmd, showcalc, showda;
+int wengine, order, showweb, showcmd, showcalc, showda, showscientific;
 
-gboolean gshowcmd, gshowcalc, gshowweb, gshowda;
+gboolean gshowcmd, gshowcalc, gshowweb, gshowda, gshowscientific;
 
 GtkWidget *window, *grid, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext, *listbox2,
 *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
 *submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
-*wshowcmd, *wshowweb, *wshowcalc, *defbtn, *applybtn, *listbox, *web_box, *wshowda;
+*wshowcmd, *wshowweb, *wshowcalc, *wshowscientific, *defbtn, *applybtn, *listbox, *web_box, *wshowda;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;
@@ -533,9 +533,21 @@ GtkWidget* filter_listbox(GtkEntry *entry, GtkListBox *listbox)
 
 	if (strlen(text) > 0 && isdigit(text[0])) 
 	{
+		double minscientific = 999999;
 		double result = evaluate((char*)text);
 		char buffer[256];
-		snprintf(buffer, 256, "%g", result);
+		if (result < minscientific)
+		{
+			snprintf(buffer, 256, "%g", result);
+		}
+		else if (result > minscientific && showscientific == 0)
+		{
+			snprintf(buffer, 256, "%f", result);
+		}
+		else if (result > minscientific && showscientific == 1)
+		{
+			snprintf(buffer, 256, "%g", result);
+		}
 		gtk_label_set_text(GTK_LABEL(manswer), buffer);
 		gtk_widget_hide(pr);
 	}
@@ -710,6 +722,8 @@ void readconf()
 					showcmd = atoi(value_str);
 				else if (strcmp(name, "showcalc") == 0) 
 					showcalc = atoi(value_str);
+				else if (strcmp(name, "showscientific") == 0) 
+					showscientific = atoi(value_str);
 				else if (strcmp(name, "showda") == 0) 
 					showda = atoi(value_str);
 			}
@@ -731,7 +745,7 @@ void readconf()
 		webengine = cengine;
 
 	// Use the values that were read from the file
-	printf("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\n", webengine, order, showda, showcmd, showweb, showcalc);
+	printf("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\n", webengine, order, showda, showcmd, showweb, showcalc, showscientific);
 }
 
 void on_webcombo_changed(GtkComboBox *webcombo, gpointer user_data)
@@ -790,6 +804,7 @@ void on_apply_button_clicked(GtkButton *button, gpointer user_data)
 	gshowcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
 	gshowweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
 	gshowcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
+	gshowscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
 	gshowda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
 	const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
 		*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
@@ -845,6 +860,7 @@ void on_apply_button_clicked(GtkButton *button, gpointer user_data)
 	fprintf(fp, "showweb=%d\n", gshowweb);
 	fprintf(fp, "showcmd=%d\n", gshowcmd);
 	fprintf(fp, "showcalc=%d\n", gshowcalc);
+	fprintf(fp, "showscientific=%d\n", gshowscientific);
 
 	fclose(fp);
 	perror("execvp");

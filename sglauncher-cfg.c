@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 	wshowcmd = gtk_check_button_new();
 	wshowweb =  gtk_check_button_new();
 	wshowcalc =  gtk_check_button_new();
+	wshowscientific =  gtk_check_button_new();
 
 	if (defconf)
 		defbtn = gtk_button_new_with_label("Default");
@@ -97,9 +98,11 @@ int main(int argc, char *argv[])
 
 	gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Show Math answer when numbers are typed "), 0, 7, 1, 1); 
 	gtk_grid_attach(GTK_GRID(grid), wshowcalc,   1, 7, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Use scientific notation on math answers"), 0, 8, 1, 1); 
+	gtk_grid_attach(GTK_GRID(grid), wshowscientific,   1, 8, 1, 1);
 
-	gtk_grid_attach(GTK_GRID(grid), defbtn,   0, 8, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), applybtn, 1, 8, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), defbtn,   0, 9, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), applybtn, 1, 9, 1, 1);
 
 	gtk_entry_set_placeholder_text(GTK_ENTRY(webctm), "https://baresearch.org/search?q");
 	const char *web_ctm = gtk_entry_get_text(GTK_ENTRY(webctm));
@@ -120,6 +123,10 @@ int main(int argc, char *argv[])
 	if (showcalc == 1)
 	{
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowcalc), TRUE);
+	}
+	if (showscientific == 1)
+	{
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowscientific), TRUE);
 	}
 
 	//fix newline at end of cengine
