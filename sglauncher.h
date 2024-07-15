@@ -68,94 +68,62 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 	const gchar *widget_name = gtk_widget_get_name(GTK_WIDGET(row));
 	gchar *filename;
 	gchar *action_name;
+	gchar *toexec;
+g_print(widget_name);
+	gchar *src = (gchar *)widget_name;
+	gchar *dst = src;
 
-	gchar *comma_position = strchr(widget_name, ',');
-	if (comma_position)
+	while (*src)
 	{
-		gchar *start_position = strchr(comma_position, '[');
-
-		if (start_position)
+		if (*src == '%' && *(src + 1) != '\0')
 		{
-			action_name = g_strdup(start_position + 1);
-			filename = g_strndup(comma_position + 1, start_position - comma_position - 1);
+			src += 2;
 		} 
 		else
 		{
-			filename = g_strdup(comma_position + 1);
-			action_name = g_strdup("");
+			*dst++ = *src++;
+		}
+	}
+	*dst = '\0';
+
+	gchar *comma_position = strchr(widget_name, ',');
+
+	if (comma_position)
+	{
+		gchar *first_comma_position = strchr(widget_name, ',');
+
+		if (first_comma_position)
+		{
+			gsize length = first_comma_position - widget_name;
+			toexec = g_strndup(widget_name, length);
+		}
+		else
+		{
+			toexec = g_strdup(widget_name);
 		}
 	}
 	else
 	{
-		filename = g_strdup(widget_name);
-		action_name = g_strdup("");
+		toexec = g_strdup(widget_name);
 	}
 
-	FILE *file = fopen(filename, "r");
-	g_free(filename);
+	GError *error = NULL;
+	GPid pid;
+	gboolean success = g_spawn_async_with_pipes(NULL,
+		(gchar * []) {"/bin/sh", "-c", toexec, NULL},
+		NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
 
-	if (!file)
+	g_print(toexec);
+	if (!success)
 	{
-		g_warning("Failed to open file: %s", filename);
-		return;
+		g_warning("Failed to start program: %s", error->message);
+		g_error_free(error);
 	}
-
-	gchar *line = NULL;
-	size_t len = 0;
-
-	gboolean within_desired_content = FALSE;
-
-	while (getline(&line, &len, file) != -1)
+	else
 	{
-		//if (g_strstr_len(line, -1, g_strdup_printf("Name=%s", action_name)))
-		//{
-			//within_desired_content = TRUE;
-		//}
-		if (g_str_has_prefix(line, "Exec="))
-		{
-			gchar *command = g_strchomp(line + 5);
-			gchar *trimmed_command = g_strstrip(command);
-			size_t command_len = strlen(trimmed_command);
-			if (command_len >= 2 && (trimmed_command[command_len - 2] == '%' || trimmed_command[command_len - 2] == ' '))
-			{
-				trimmed_command[command_len - 2] = '\0';
-			}
-
-			gchar **parts = g_strsplit(trimmed_command, "=", -1);
-
-			for (gchar **part = parts; *part; ++part)
-			{
-				gchar *var_name = g_strdup_printf("PART%d", part - parts);
-				g_setenv(var_name, *part, TRUE);
-				g_free(var_name);
-			}
-
-			g_strfreev(parts);
-
-			GError *error = NULL;
-			GPid pid;
-			gboolean success = g_spawn_async_with_pipes(NULL,
-				(gchar * []) {"/bin/sh", "-c", trimmed_command, NULL},
-				NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
-	
-			g_print(trimmed_command);
-			if (!success)
-			{
-				g_warning("Failed to start program: %s", error->message);
-				g_error_free(error);
-				g_free(command);
-			}
-			else
-			{
-				g_spawn_close_pid(pid);
-				gtk_main_quit();
-			}
-			break;
-		}
+		g_spawn_close_pid(pid);
+		gtk_main_quit();
 	}
-
-	fclose(file);
-	g_free(line);
 }
 
 
@@ -164,6 +132,7 @@ typedef struct
 	gchar *name;
 	gchar *icon;
 	gchar *path;
+	gchar *toexec;
 }AppDetails;
 
 int compare_app_details(const void *a, const void *b)
@@ -198,6 +167,7 @@ void load_apps(GtkListBox *listbox)
 					gchar *line = NULL;
 					size_t len = 0;
 					gchar *icon_name = NULL;
+					gchar *toexec = NULL;
 					gchar *app_name = NULL;
 					gboolean nodisplay = FALSE;
 					GtkWidget *row = NULL;
@@ -225,11 +195,20 @@ void load_apps(GtkListBox *listbox)
 							}
 							icon_name = g_strdup(line + 5);
 						}
+						else if (strstr(line, "Exec=") == line)
+						{
+							gchar *pos = strchr(line + 5, '\n');
+							if (pos != NULL)
+							{
+								*pos = '\0';
+							}
+							toexec = g_strdup(line + 5);
+						}
 						else if (strstr(line, "NoDisplay=") == line)
 						{
 							nodisplay = TRUE;
 						}
-						else if (showda && strstr(line, "[Desktop Action") == line)
+						if (showda && strstr(line, "[Desktop Action") == line)
 						{
 							gchar *action_name_start = strchr(line, '[') + 1;
 							gchar *action_name_end = strchr(line, ']');
@@ -237,35 +216,79 @@ void load_apps(GtkListBox *listbox)
 							{
 								*action_name_end = '\0';
 								gchar *action_name = g_strdup(action_name_start);
-								getline(&line, &len, file);
-								gchar *action_name_line = g_strstrip(line);
-								if (strstr(action_name_line, "Name=") == action_name_line)
-								{
-									gchar *pos = strchr(action_name_line + 5, '\n');
-									if (pos != NULL)
-									{
-										*pos = '\0';
-									}
-									if (strlen(action_name_line + 5) > 0)
-									{
-										action_name = g_strdup(action_name_line + 5);
-									}
-								}
-
-								getline(&line, &len, file);
-								gchar *exec_line = g_strstrip(line);
 								gchar *exec_value = NULL;
-								if (strstr(exec_line, "Exec=") == exec_line)
+								gboolean done = FALSE;
+
+								while (getline(&line, &len, file) != -1)
 								{
-									gchar *pos = strchr(exec_line + 5, '\n');
-									if (pos != NULL)
+									gchar *stripped_line = g_strstrip(line);
+
+									if (stripped_line[0] == '[' && strstr(stripped_line, "[Desktop Action") == stripped_line)
 									{
-										*pos = '\0';
+										gchar *search_str = g_strdup_printf("%s,%s,%s", exec_value ? exec_value : "", app_name ? app_name : "", action_name);
+
+										GtkWidget *action_row = gtk_list_box_row_new();
+										GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+										gtk_container_add(GTK_CONTAINER(action_row), action_box);
+										gtk_widget_set_name(action_row, search_str);
+
+										GtkIconTheme *theme = gtk_icon_theme_get_default();
+										GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
+										GdkPixbuf *licon = gtk_icon_info_load_icon(info, NULL);
+
+										if (licon != NULL)
+										{
+											GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(licon, 16, 16, GDK_INTERP_BILINEAR);
+											GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
+											gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
+											g_object_unref(resized_icon);
+											g_object_unref(licon);
+										}
+										else
+										{
+											GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
+											gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
+										}
+
+										GtkWidget *label = gtk_label_new(action_name);
+										gtk_box_pack_start(GTK_BOX(action_box), label, FALSE, FALSE, 0);
+										gtk_list_box_insert(GTK_LIST_BOX(listbox), action_row, -1);
+										gtk_widget_set_size_request(action_box, -1, 32);
+
+										g_free(search_str);
+										g_free(action_name);
+										g_free(exec_value);
+
+										action_name_start = strchr(stripped_line, '[') + 1;
+										action_name_end = strchr(stripped_line, ']');
+										*action_name_end = '\0';
+										action_name = g_strdup(action_name_start);
+										exec_value = NULL;
 									}
-									exec_value = g_strdup(exec_line + 5);
+									else if (strstr(stripped_line, "Name=") == stripped_line)
+									{
+										gchar *pos = strchr(stripped_line + 5, '\n');
+										if (pos != NULL)
+										{
+											*pos = '\0';
+										}
+										if (strlen(stripped_line + 5) > 0)
+										{
+											action_name = g_strdup(stripped_line + 5);
+										}
+									}
+									else if (strstr(stripped_line, "Exec=") == stripped_line)
+									{
+										gchar *pos = strchr(stripped_line + 5, '\n');
+										if (pos != NULL)
+										{
+											*pos = '\0';
+										}
+										exec_value = g_strdup(stripped_line + 5);
+									}
 								}
 
-								gchar *search_str = g_strdup_printf("%s,%s[%s", app_name ? app_name : "", path, action_name);
+								gchar *search_str = g_strdup_printf("%s,%s,%s", exec_value ? exec_value : "", app_name ? app_name : "", action_name);
 
 								GtkWidget *action_row = gtk_list_box_row_new();
 								GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -300,6 +323,7 @@ void load_apps(GtkListBox *listbox)
 								g_free(exec_value);
 							}
 						}
+
 					}
 
 					if (!nodisplay && app_name != NULL)
@@ -308,6 +332,7 @@ void load_apps(GtkListBox *listbox)
 						app_details[num_apps].name = app_name;
 						app_details[num_apps].icon = icon_name;
 						app_details[num_apps].path = path;
+						app_details[num_apps].toexec = toexec;
 						num_apps++;
 					}
 					else
@@ -315,6 +340,7 @@ void load_apps(GtkListBox *listbox)
 						g_free(app_name);
 						g_free(icon_name);
 						g_free(path);
+						g_free(toexec);
 					}
 
 					fclose(file);
@@ -368,7 +394,7 @@ void load_apps(GtkListBox *listbox)
 		gtk_widget_set_size_request(row, -1, 32);
 		char query[4096];
 			sprintf(query, "%s%s%s", app_details[i].name ? app_details[i].name : "", app_details[i].path, app_details[i].icon ? app_details[i].icon : "");
-			gchar *search_str2 = g_strdup_printf("%s%s,%s[", app_details[i].name ? app_details[i].name : "", app_details[i].icon, app_details[i].path);
+			gchar *search_str2 = g_strdup_printf("%s,%s%s", app_details[i].toexec ? app_details[i].toexec : "", app_details[i].name ? app_details[i].name : "", app_details[i].icon);
 			gtk_widget_set_name(row, search_str2);
 	}
 	
