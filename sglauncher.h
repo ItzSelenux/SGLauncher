@@ -107,11 +107,11 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 
 	while (getline(&line, &len, file) != -1)
 	{
-		if (g_strstr_len(line, -1, g_strdup_printf("Name=%s", action_name)))
-		{
-			within_desired_content = TRUE;
-		}
-		if (within_desired_content && g_str_has_prefix(line, "Exec="))
+		//if (g_strstr_len(line, -1, g_strdup_printf("Name=%s", action_name)))
+		//{
+			//within_desired_content = TRUE;
+		//}
+		if (g_str_has_prefix(line, "Exec="))
 		{
 			gchar *command = g_strchomp(line + 5);
 			gchar *trimmed_command = g_strstrip(command);
@@ -137,7 +137,8 @@ void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_da
 			gboolean success = g_spawn_async_with_pipes(NULL,
 				(gchar * []) {"/bin/sh", "-c", trimmed_command, NULL},
 				NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
-
+	
+			g_print(trimmed_command);
 			if (!success)
 			{
 				g_warning("Failed to start program: %s", error->message);

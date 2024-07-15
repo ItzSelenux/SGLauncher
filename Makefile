@@ -11,10 +11,9 @@ sglauncher: sglauncher.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
 sglauncher-cfg: sglauncher-cfg.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
-debug:
-	$(CC) $(CFLAGS) -g $(SRC) -o debug $(LIBS)
+debug: sglauncher.o
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm -g
 test:
 	./sglauncher
-	./sglauncher-cfg
 clean:
 	rm -f $(OBJ) $(EXE) debug
