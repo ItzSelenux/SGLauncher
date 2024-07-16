@@ -22,9 +22,10 @@ test:
 install:
 	install -Dm755 $(EXE) $(BIN_DIR)/$(EXE)
 	install -Dm644 $(EXE).desktop $(APP_DIR)/$(EXE).desktop
-	install -Dm755 $(EXE).conf /etc/$(EXE).conf
+	install -Dm644 icons/menulibre.svg $(PREFIX)/share/icons/hicolor/64x64/apps/menulibre.png
 uninstall:
-	rm -f $(BIN_DIR)/$(EXE)
-	rm -f $(APP_DIR)/$(EXE).desktop
+	rm $(BIN_DIR)/$(EXE)
+	rm $(APP_DIR)/$(EXE).desktop
+	rm $(PREFIX)/share/icons/hicolor/64x64/apps/menulibre.png
 clean:
 	rm -f $(OBJ) $(EXE) debug
