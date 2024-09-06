@@ -1,4 +1,4 @@
-void restart_program();
+void exit_window();
 
 void updateconf(GtkButton *button, gpointer user_data) 
 {
@@ -29,6 +29,7 @@ void updateconf(GtkButton *button, gpointer user_data)
 			fprintf(fp, "showcmd=1\n");
 			fprintf(fp, "showcalc=1\n");
 			fprintf(fp, "showscientific=1\n");
+			//fprintf(fp, "exitwhenunfocused=1\n");
 		}
 		else
 		{
@@ -43,6 +44,7 @@ void updateconf(GtkButton *button, gpointer user_data)
 		gshowcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
 		gshowscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
 		gshowda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
+		//gexitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
 		const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
 			*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
 			*ncengine,
@@ -54,7 +56,7 @@ void updateconf(GtkButton *button, gpointer user_data)
 		else
 			ncengine = placeholder_text;
 
-		g_print(ncengine);
+		g_print("%s", ncengine);
 		cweb = NULL;
 		cwebng = gtk_entry_get_text(GTK_ENTRY(webctm));
 		corder = NULL;
@@ -90,37 +92,24 @@ void updateconf(GtkButton *button, gpointer user_data)
 		fprintf(fp, "showcmd=%d\n", gshowcmd);
 		fprintf(fp, "showcalc=%d\n", gshowcalc);
 		fprintf(fp, "showscientific=%d\n", gshowscientific);
+		//fprintf(fp, "exitwhenunfocused=%d\n", gexitwhenunfocused);
 	}
 	fclose(fp);
-	restart_program();
+	restarting = 1;
+	exit_window();
 }
 
 void readconf()
 {
 	//READ THE CONF
-	char *cwengine;
-	cwengine = " ";
 	if (home_dir == NULL)
 	{
-		fprintf(stderr, "Error: HOME environment variable is not set.\n");
-		exit(1);
-	}
-
-	snprintf(config_file_path, sizeof(config_file_path), "%s/.config/sglauncher.conf", home_dir);
-
-	FILE *file = fopen(config_file_path, "r");
-	if (file == NULL)
-	{
-		order = 0;
-		wengine = 1;
-		showweb = 1;
-		showcmd = 1;
-		showcalc = 1;
-		showscientific = 1;
-		showda = 0;
+		return;
 	}
 	else
 	{
+		snprintf(config_file_path, sizeof(config_file_path), "%s/.config/sglauncher.conf", home_dir);
+		FILE *file = fopen(config_file_path, "r");
 		char line[ML];
 		// Read each line from the file and parse the variable assignments
 		while (fgets(line, ML, file) != NULL)
@@ -146,6 +135,8 @@ void readconf()
 					showscientific = atoi(value_str);
 				else if (strcmp(name, "showda") == 0) 
 					showda = atoi(value_str);
+				else if (strcmp(name, "exitwhenunfocused") == 0) 
+					exitwhenunfocused = atoi(value_str);
 			}
 		}
 		fclose(file);

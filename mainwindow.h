@@ -1,9 +1,20 @@
 void create_window();
-void restart_program()
+
+void exit_window()
 {
-	gtk_widget_destroy(window);
-	readconf();
-	create_window();
+	if (restarting)
+	{
+		gtk_widget_destroy(window);
+		gtk_widget_destroy(dialog);
+		restarting = 0;
+		readconf();
+		create_window();
+	}
+	else
+	{
+		gtk_main_quit();
+		exit(0);
+	}
 }
 
 void on_submenu_item2_selected(GtkMenuItem *menuitem, gpointer userdata) 
@@ -21,7 +32,7 @@ void on_submenu_item2_selected(GtkMenuItem *menuitem, gpointer userdata)
 			g_object_unref(info);
 		}
 		gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
-		GtkWidget *label = gtk_label_new(" - SGLauncher is a quick launcher that can run programs, desktop actions, run on terminal or search on web\n - You can run the first item on the list by pressing enter, or press down to select other item \n - You can press CTRL+T to run on terminal and CTRL+B to Search on Web\n - You can customize the program in the Settings or editing the config file on ~/.config/sglauncher.conf");
+		GtkWidget *label = gtk_label_new(" - SGLauncher is a quick launcher that can run programs, desktop actions, run on terminal or search on web\n - You can run the first item on the list by pressing enter, or press down to select other item \n - If the first element has a desktop action and the name match with the search box text, the desktop action will be executed \n - You can press CTRL+T to run on terminal and CTRL+B to Search on Web\n - You can customize the program in the Settings or editing the config file on ~/.config/sglauncher.conf");
 	gtk_container_add(GTK_CONTAINER(dialog), label);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	gtk_widget_show_all(dialog);
@@ -63,8 +74,8 @@ void create_window()
 	gtk_window_set_title(GTK_WINDOW(window), "SGLauncher");
 	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 	gtk_widget_set_size_request(window, 333, 333);
-	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	
+	g_signal_connect(window, "destroy", G_CALLBACK(exit_window), NULL);
+
 	theme = gtk_icon_theme_get_default();
 	info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
 	if (info != NULL) 
@@ -78,10 +89,9 @@ void create_window()
 	headerbar = gtk_header_bar_new();
 	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
 
-
 	entry = gtk_entry_new();
 
-	GtkWidget *button = gtk_menu_button_new();
+	button = gtk_menu_button_new();
 	image = gtk_image_new_from_icon_name("menulibre", GTK_ICON_SIZE_BUTTON);
 	gtk_container_add(GTK_CONTAINER(button), image);
 
@@ -94,7 +104,10 @@ void create_window()
 
 	submenu = gtk_menu_new();
 
-	submenu_item1 = gtk_menu_item_new_with_label("Settings");
+	if (!nohome)
+	{
+		submenu_item1 = gtk_menu_item_new_with_label("Settings");
+	}
 	submenu_item2 = gtk_menu_item_new_with_label("Help");
 	submenu_item3 = gtk_menu_item_new_with_label("About");
 
@@ -117,9 +130,10 @@ void create_window()
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-	listbox = gtk_list_box_new();
-	gtk_list_box_set_selection_mode(GTK_LIST_BOX(listbox), GTK_SELECTION_SINGLE);
-	gtk_container_add(GTK_CONTAINER(scrolled_window), listbox);
+	treeview = gtk_tree_view_new();
+	gtk_tree_view_set_activate_on_single_click(GTK_TREE_VIEW(treeview), TRUE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+	gtk_container_add(GTK_CONTAINER(scrolled_window), treeview);
 	gtk_widget_grab_focus(entry);
 
 	cmd_row = gtk_list_box_row_new();
@@ -154,15 +168,19 @@ void create_window()
 	gtk_widget_set_size_request(web_row, -1, 32);
 	gtk_widget_set_size_request(cmd_row, -1, 32);
 
-
 	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), row);
 	g_signal_connect(submenu_item1, "activate", G_CALLBACK(showcfg), NULL);
 	g_signal_connect(submenu_item2, "activate", G_CALLBACK(on_submenu_item2_selected), NULL);
 	g_signal_connect(submenu_item3, "activate", G_CALLBACK(on_submenu_item3_selected), NULL);
 	g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
-	g_signal_connect(listbox, "row-activated", G_CALLBACK(on_item_activated), NULL);
-	g_signal_connect(entry, "changed", G_CALLBACK(filter_listbox), listbox);
-	g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
+	g_signal_connect(treeview, "row-activated", G_CALLBACK(on_item_activated), NULL);
+
+	//g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
+
+	//if (exitwhenunfocused)
+	//{
+		//g_signal_connect(window, "focus-out-event", G_CALLBACK(on_focus_out), NULL);
+	//}
 
 	// Load apps into the list box
 	grid = gtk_grid_new();
@@ -202,15 +220,12 @@ void create_window()
 		gtk_grid_attach(GTK_GRID(grid), scrolled_window, 1, 3, 1, 1);
 		gtk_grid_attach(GTK_GRID(grid), listbox2, 0, 3, 1, 1);
 	}
+
 	gtk_widget_set_size_request(listbox2, -1, -1);
 	gtk_widget_set_size_request(scrolled_window, -1, 256);
 	gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), pr, 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
-
-	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(listbox));
 
 	if (sgcfg)
 	{
@@ -219,7 +234,20 @@ void create_window()
 	else
 	{
 		gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-		load_apps(GTK_LIST_BOX(listbox));
+		load_apps(GTK_TREE_VIEW(treeview));
+
+		filter_model = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(sorted_model), NULL));
+
+		filter_data.filter_text = g_strdup("");
+		filter_data.filter = filter_model;
+		filter_data.treeview = GTK_TREE_VIEW(treeview);  
+
+		gtk_tree_model_filter_set_visible_func(filter_model,
+			(GtkTreeModelFilterVisibleFunc) on_filter_visible, &filter_data, NULL);
+			gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(filter_model));
+			filter_data.entry = GTK_ENTRY(entry);
+
+		g_signal_connect(entry, "changed", G_CALLBACK(on_entry_changed), &filter_data);
 		gtk_widget_show_all(window);
 		gtk_widget_hide(mathtext);
 		gtk_widget_hide(listbox2);

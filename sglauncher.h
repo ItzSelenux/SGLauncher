@@ -12,19 +12,27 @@ const char* app_dirs[] = {"/usr/share/applications", "", NULL};
 const char* quick_dirs[] = {NULL};
 const char* pver = mver;
 char *pm, *webengine, *cwengine, cengine[ML], *home_dir, config_file_path[256];
-int wengine, order, showweb, showcmd, showcalc, showda, showscientific,sgcfg, nocsd = 0;;
+int wengine, order = 0, showweb = 1, showcmd = 1, showcalc = 1, showda = 1,
+	showscientific = 1, exitwhenunfocused = 0, sgcfg, nocsd = 0, 
+callconfig = 0, nohome = 0, restarting = 0;
 
-gboolean gshowcmd, gshowcalc, gshowweb, gshowda, gshowscientific;
+gboolean gshowcmd, gshowcalc, gshowweb, gshowda, gshowscientific, gexitwhenunfocused;
 
-GtkWidget *window, *grid, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext, *listbox2,
+GtkWidget *window, *grid, *button, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext, *listbox2,
 *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
 *submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
-*wshowcmd, *wshowweb, *wshowcalc, *wshowscientific, *defbtn, *applybtn, *listbox, *web_box, *wshowda,
-*scrolled_window;
+*wshowcmd, *wshowweb, *wshowcalc, *wshowscientific, *wexitwhenunfocused, *defbtn, *applybtn, 
+*treeview, *web_box, *wshowda, *scrolled_window;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;
 GdkPixbuf *icon;
+
+GtkTreeStore *store;
+GtkTreeViewColumn *column;
+GtkCellRenderer *renderer;
+GtkTreeModelSort *sorted_model;
+GtkTreeModelFilter *filter_model;
 
 #include "settings.h"
 #include "calc.h"

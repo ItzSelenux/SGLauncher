@@ -6,271 +6,164 @@ typedef struct
 	gchar *toexec;
 }AppDetails;
 
-int compare_app_details(const void *a, const void *b)
+typedef struct
 {
-	const AppDetails *app1 = (const AppDetails *)a;
-	const AppDetails *app2 = (const AppDetails *)b;
-	return strcmp(app1->name, app2->name);
+	GtkEntry *entry;
+	GtkTreeModelFilter *filter;
+	gchar *filter_text;
+	GtkTreeView *treeview;
+} FilterData;
+FilterData filter_data;
+
+gint gtk_tree_iter_compare_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
+{
+	gchar *name_a = NULL;
+	gchar *name_b = NULL;
+	gchar *casefolded_a = NULL;
+	gchar *casefolded_b = NULL;
+	gint result;
+
+	gtk_tree_model_get(model, a, 0, &name_a, -1);
+	gtk_tree_model_get(model, b, 0, &name_b, -1);
+
+	if (name_a == NULL)
+	{
+		if (name_b == NULL) return 0;
+		return -1;
+	}
+	if (name_b == NULL) return 1;
+
+	casefolded_a = g_utf8_casefold(name_a, -1);
+	casefolded_b = g_utf8_casefold(name_b, -1);
+
+	result = g_utf8_collate(casefolded_a, casefolded_b);
+
+	g_free(name_a);
+	g_free(name_b);
+	g_free(casefolded_a);
+	g_free(casefolded_b);
+
+	return result;
 }
 
-void load_apps(GtkListBox *listbox)
+
+void load_apps(GtkTreeView *treeview)
 {
-	AppDetails *app_details = NULL;
-	int num_apps = 0;
+	store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
+
+	renderer = gtk_cell_renderer_pixbuf_new();
+	column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf", 2, NULL);
+	gtk_tree_view_append_column(treeview, column);
+
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("", renderer, "text", 0, NULL);
+	gtk_tree_view_append_column(treeview, column);
+
+	sorted_model = GTK_TREE_MODEL_SORT(gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(store)));
+
+	gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sorted_model), 0, (GtkTreeIterCompareFunc)gtk_tree_iter_compare_func, NULL, NULL);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sorted_model), 0, GTK_SORT_ASCENDING);
+
+	gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(sorted_model));
+//	g_object_unref(store);
 
 	for (int i = 0; i < sizeof(app_dirs) / sizeof(app_dirs[0]); i++)
 	{
 		DIR *dir = opendir(app_dirs[i]);
-		if (dir != NULL)
+		if (dir == NULL) continue;
+
+		struct dirent *ent;
+		while ((ent = readdir(dir)) != NULL)
 		{
-			struct dirent *ent;
-			while ((ent = readdir(dir)) != NULL)
+			if (ent->d_name[0] == '.' || !g_str_has_suffix(ent->d_name, ".desktop")) continue;
+
+			gchar *path = g_strdup_printf("%s/%s", app_dirs[i], ent->d_name);
+			GKeyFile *key_file = g_key_file_new();
+			GError *error = NULL;
+
+			if (!g_key_file_load_from_file(key_file, path, G_KEY_FILE_NONE, &error))
 			{
-				if (ent->d_name[0] == '.' || strstr(ent->d_name, ".desktop") == NULL)
+				g_warning("Error loading .desktop file: %s", error->message);
+				g_error_free(error);
+				g_free(path);
+				g_key_file_free(key_file);
+				continue;
+			}
+
+			if (g_key_file_get_boolean(key_file, "Desktop Entry", "NoDisplay", NULL))
+			{
+				g_free(path);
+				g_key_file_free(key_file);
+				continue;
+			}
+
+			gchar *app_name = g_key_file_get_string(key_file, "Desktop Entry", "Name", NULL);
+			gchar *icon_name = g_key_file_get_string(key_file, "Desktop Entry", "Icon", NULL);
+			gchar *toexec = g_key_file_get_string(key_file, "Desktop Entry", "Exec", NULL);
+			GdkPixbuf *icon_pixbuf = NULL;
+
+			if (g_path_is_absolute(icon_name) && g_file_test(icon_name, G_FILE_TEST_EXISTS))
+			{
+				icon_pixbuf = gdk_pixbuf_new_from_file(icon_name, &error);
+			}
+			else
+			{
+				GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
+				GtkIconInfo *icon_info = gtk_icon_theme_lookup_icon(icon_theme, icon_name, 16, GTK_ICON_LOOKUP_USE_BUILTIN);
+
+				if (icon_info)
 				{
-					continue;
-				}
-
-				gchar *path = g_strdup_printf("%s/%s", app_dirs[i], ent->d_name);
-				FILE *file = fopen(path, "r");
-				if (file != NULL)
-				{
-					gchar *line = NULL;
-					size_t len = 0;
-					gchar *icon_name = NULL;
-					gchar *toexec = NULL;
-					gchar *app_name = NULL;
-					gboolean nodisplay = FALSE;
-					GtkWidget *row = NULL;
-					gboolean alreadyexec = FALSE;
-
-					while (getline(&line, &len, file) != -1)
-					{
-						if (strstr(line, "Name=") == line && app_name == NULL)
-						{
-							gchar *pos = strchr(line + 5, '\n');
-							if (pos != NULL)
-							{
-								*pos = '\0';
-							}
-							if (strlen(line + 5) > 0)
-							{
-								app_name = g_strdup(line + 5);
-							}
-						}
-						else if (strstr(line, "Icon=") == line)
-						{
-							gchar *pos = strchr(line + 5, '\n');
-							if (pos != NULL)
-							{
-								*pos = '\0';
-							}
-							icon_name = g_strdup(line + 5);
-						}
-						else if (strstr(line, "Exec=") == line)
-						{
-							if (!alreadyexec)
-							{
-								gchar *pos = strchr(line + 5, '\n');
-								if (pos != NULL)
-								{
-									*pos = '\0';
-								}
-								toexec = g_strdup(line + 5);
-								alreadyexec = TRUE;
-							}
-						}
-						else if (strstr(line, "NoDisplay=") == line)
-						{
-							nodisplay = TRUE;
-						}
-						if (showda && strstr(line, "[Desktop Action") == line)
-						{
-							gchar *action_name_start = strchr(line, '[') + 1;
-							gchar *action_name_end = strchr(line, ']');
-							if (action_name_start != NULL && action_name_end != NULL)
-							{
-								*action_name_end = '\0';
-								gchar *action_name = g_strdup(action_name_start);
-								gchar *exec_value = NULL;
-								gboolean done = FALSE;
-
-								while (getline(&line, &len, file) != -1)
-								{
-									gchar *stripped_line = g_strstrip(line);
-
-									if (stripped_line[0] == '[' && strstr(stripped_line, "[Desktop Action") == stripped_line)
-									{
-										gchar *search_str = g_strdup_printf("%s,%s,%s", exec_value ? exec_value : "", app_name ? app_name : "", action_name);
-
-										GtkWidget *action_row = gtk_list_box_row_new();
-										GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-										gtk_container_add(GTK_CONTAINER(action_row), action_box);
-										gtk_widget_set_name(action_row, search_str);
-
-										GtkIconTheme *theme = gtk_icon_theme_get_default();
-										GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
-										GdkPixbuf *licon = gtk_icon_info_load_icon(info, NULL);
-
-										if (licon != NULL)
-										{
-											GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(licon, 16, 16, GDK_INTERP_BILINEAR);
-											GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
-											gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
-											g_object_unref(resized_icon);
-											g_object_unref(licon);
-										}
-										else
-										{
-											GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
-											gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
-										}
-
-										GtkWidget *label = gtk_label_new(action_name);
-										gtk_box_pack_start(GTK_BOX(action_box), label, FALSE, FALSE, 0);
-										gtk_list_box_insert(GTK_LIST_BOX(listbox), action_row, -1);
-										gtk_widget_set_size_request(action_box, -1, 32);
-
-										g_free(search_str);
-										g_free(action_name);
-										g_free(exec_value);
-
-										action_name_start = strchr(stripped_line, '[') + 1;
-										action_name_end = strchr(stripped_line, ']');
-										*action_name_end = '\0';
-										action_name = g_strdup(action_name_start);
-										exec_value = NULL;
-									}
-									else if (strstr(stripped_line, "Name=") == stripped_line)
-									{
-										gchar *pos = strchr(stripped_line + 5, '\n');
-										if (pos != NULL)
-										{
-											*pos = '\0';
-										}
-										if (strlen(stripped_line + 5) > 0)
-										{
-											action_name = g_strdup(stripped_line + 5);
-										}
-									}
-									else if (strstr(stripped_line, "Exec=") == stripped_line)
-									{
-										gchar *pos = strchr(stripped_line + 5, '\n');
-										if (pos != NULL)
-										{
-											*pos = '\0';
-										}
-										exec_value = g_strdup(stripped_line + 5);
-									}
-								}
-
-								gchar *search_str = g_strdup_printf("%s,%s,%s", exec_value ? exec_value : "", app_name ? app_name : "", action_name);
-
-								GtkWidget *action_row = gtk_list_box_row_new();
-								GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-								gtk_container_add(GTK_CONTAINER(action_row), action_box);
-								gtk_widget_set_name(action_row, search_str);
-
-								GtkIconTheme *theme = gtk_icon_theme_get_default();
-								GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, icon_name, 16, 0);
-								GdkPixbuf *licon = gtk_icon_info_load_icon(info, NULL);
-
-								if (licon != NULL)
-								{
-									GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(licon, 16, 16, GDK_INTERP_BILINEAR);
-									GtkWidget *icon = gtk_image_new_from_pixbuf(resized_icon);
-									gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
-									g_object_unref(resized_icon);
-									g_object_unref(licon);
-								}
-								else
-								{
-									GtkWidget *icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
-									gtk_box_pack_start(GTK_BOX(action_box), icon, FALSE, FALSE, 0);
-								}
-
-								GtkWidget *label = gtk_label_new(action_name);
-								gtk_box_pack_start(GTK_BOX(action_box), label, FALSE, FALSE, 0);
-								gtk_list_box_insert(GTK_LIST_BOX(listbox), action_row, -1);
-								gtk_widget_set_size_request(action_box, -1, 32);
-
-								g_free(search_str);
-								g_free(action_name);
-								g_free(exec_value);
-							}
-						}
-
-					}
-
-					if (!nodisplay && app_name != NULL)
-					{
-						app_details = realloc(app_details, (num_apps + 1) * sizeof(AppDetails));
-						app_details[num_apps].name = app_name;
-						app_details[num_apps].icon = icon_name;
-						app_details[num_apps].path = path;
-						app_details[num_apps].toexec = toexec;
-						num_apps++;
-					}
-					else
-					{
-						g_free(app_name);
-						g_free(icon_name);
-						g_free(path);
-						g_free(toexec);
-					}
-
-					fclose(file);
+					icon_pixbuf = gtk_icon_info_load_icon(icon_info, &error);
+					g_object_unref(icon_info);
 				}
 			}
+
+			if (icon_pixbuf)
+			{
+				GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, 16, 16, GDK_INTERP_BILINEAR);
+				g_object_unref(icon_pixbuf);
+				icon_pixbuf = resized_icon;
+			}
+			else
+			{
+				icon_pixbuf = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), "application-x-executable", 16, 0, NULL);
+			}
+
+			GtkTreeIter app_iter;
+			gtk_tree_store_append(store, &app_iter, NULL);
+			gtk_tree_store_set(store, &app_iter, 0, app_name, 1, toexec, 2, icon_pixbuf, -1);
+
+			// Handling Desktop Actions
+			gchar **groups = g_key_file_get_groups(key_file, NULL);
+			if (showda)
+			{
+				for (int j = 0; groups[j] != NULL; j++)
+				{
+					if (g_str_has_prefix(groups[j], "Desktop Action"))
+					{
+						gchar *action_name = g_key_file_get_string(key_file, groups[j], "Name", NULL);
+						gchar *exec_value = g_key_file_get_string(key_file, groups[j], "Exec", NULL);
+
+						if (action_name && exec_value)
+						{
+							GtkTreeIter action_iter;
+							gtk_tree_store_append(store, &action_iter, &app_iter);
+							gtk_tree_store_set(store, &action_iter, 0, action_name, 1, exec_value, 2, icon_pixbuf, -1);
+							g_free(action_name);
+							g_free(exec_value);
+						}
+					}
+				}
+			}
+
+			g_strfreev(groups);
+			g_free(app_name);
+			g_free(icon_name);
+			g_clear_object(&icon_pixbuf);
+			g_free(toexec);
+			g_key_file_free(key_file);
+			g_free(path);
 		}
 		closedir(dir);
-	}
-
-	qsort(app_details, num_apps, sizeof(AppDetails), compare_app_details);
-
-	for (int i = 0; i < num_apps; i++)
-	{
-		GtkWidget *row = gtk_list_box_row_new();
-		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-		gtk_container_add(GTK_CONTAINER(row), box);
-
-		GdkPixbuf *icon_pixbuf = NULL;
-		if (app_details[i].icon != NULL && strstr(app_details[i].icon, "/") != NULL)
-		{
-			icon_pixbuf = gdk_pixbuf_new_from_file(app_details[i].icon, NULL);
-		}
-		else if (app_details[i].icon != NULL)
-		{
-			GtkIconTheme *theme = gtk_icon_theme_get_default();
-			GtkIconInfo *info = gtk_icon_theme_lookup_icon(theme, app_details[i].icon, 16, 0);
-			if (info != NULL)
-			{
-				icon_pixbuf = gtk_icon_info_load_icon(info, NULL);
-				g_object_unref(info);
-			}
-		}
-
-		GtkWidget *icon;
-		if (icon_pixbuf != NULL)
-		{
-			GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, 16, 16, GDK_INTERP_BILINEAR);
-			icon = gtk_image_new_from_pixbuf(resized_icon);
-			g_object_unref(resized_icon);
-			g_object_unref(icon_pixbuf);
-		}
-		else
-		{
-			icon = gtk_image_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
-		}
-		gtk_box_pack_start(GTK_BOX(box), icon, FALSE, FALSE, 0);
-
-		GtkWidget *label = gtk_label_new(app_details[i].name);
-		gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-		gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
-		gtk_widget_set_size_request(row, -1, 32);
-		char query[4096];
-			sprintf(query, "%s%s%s", app_details[i].name ? app_details[i].name : "", app_details[i].path, app_details[i].icon ? app_details[i].icon : "");
-			gchar *search_str2 = g_strdup_printf("%s,%s%s", app_details[i].toexec ? app_details[i].toexec : "", app_details[i].name ? app_details[i].name : "", app_details[i].icon);
-			gtk_widget_set_name(row, search_str2);
 	}
 }

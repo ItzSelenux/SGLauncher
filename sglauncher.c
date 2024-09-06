@@ -8,6 +8,10 @@ int main(int argc, char *argv[])
 	for (int i = 1; i < argc; i++)
 	{
 		sgcfg = strcmp(argv[i], "--cfg") == 0;
+		if (strcmp(argv[i], "--nocsd") == 0)
+		{
+			nocsd = 1;
+		}
 	}
 
 	readconf();

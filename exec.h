@@ -1,62 +1,55 @@
-void on_item_activated(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_data) 
+void on_item_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
 {
-	const gchar *widget_name = gtk_widget_get_name(GTK_WIDGET(row));
-	gchar *filename;
-	gchar *action_name;
-	gchar *toexec;
-	gchar *src = (gchar *)widget_name;
-	gchar *dst = src;
+	GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+	GtkTreeIter iter;
 
-	while (*src)
+	if (gtk_tree_model_get_iter(model, &iter, path))
 	{
-		if (*src == '%' && *(src + 1) != '\0')
+		gchar *app_name = NULL;
+		gchar *toexec = NULL;
+		gchar *icon_name = NULL;
+
+		gtk_tree_model_get(model, &iter, 0, &app_name, 1, &toexec, 2, &icon_name, -1);
+
+		if (toexec)
 		{
-			src += 2;
-		} 
+
+		char *percentPos = strchr(toexec, '%');
+			if (percentPos != NULL)
+			{
+				int length = percentPos - toexec;
+				toexec[length] = '\0';
+			}
+
+			GError *error = NULL;
+			GPid pid;
+			gboolean success = g_spawn_async_with_pipes(NULL,
+			(gchar *[]){"/bin/sh", "-c", toexec, NULL}, NULL, G_SPAWN_SEARCH_PATH,
+			NULL, NULL, &pid, NULL, NULL, NULL, &error);
+
+			if (!success)
+			{
+				g_warning("Failed to start program: %s", error->message);
+				g_error_free(error);
+			}
+			else
+			{
+				g_spawn_close_pid(pid);
+				gtk_main_quit();
+			}
+		}
 		else
 		{
-			*dst++ = *src++;
+			g_print("No command to execute.\n");
 		}
-	}
-	*dst = '\0';
 
-	gchar *comma_position = strchr(widget_name, ',');
-
-	if (comma_position)
-	{
-		gchar *first_comma_position = strchr(widget_name, ',');
-
-		if (first_comma_position)
-		{
-			gsize length = first_comma_position - widget_name;
-			toexec = g_strndup(widget_name, length);
-		}
-		else
-		{
-			toexec = g_strdup(widget_name);
-		}
+		g_free(app_name);
+		g_free(toexec);
+		g_free(icon_name);
 	}
 	else
 	{
-		toexec = g_strdup(widget_name);
-	}
-
-	GError *error = NULL;
-	GPid pid;
-	gboolean success = g_spawn_async_with_pipes(NULL,
-		(gchar * []) {"/bin/sh", "-c", toexec, NULL},
-		NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
-
-	g_print(toexec);
-	if (!success)
-	{
-		g_warning("Failed to start program: %s", error->message);
-		g_error_free(error);
-	}
-	else
-	{
-		g_spawn_close_pid(pid);
-		gtk_main_quit();
+		g_print("Failed to get iterator for path.\n");
 	}
 }
 
@@ -85,7 +78,7 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 					char *cmd = g_strdup_printf("%s -e %s", terminal, full_path);
 					GError *error = NULL;
 					g_spawn_command_line_async(cmd, &error);
-					printf(cmd);
+					g_print("%s", cmd);
 					if (error != NULL) 
 					{
 						printf("Error launching command: %s\n", error->message);
@@ -111,35 +104,35 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *entry)
 		}
 		free(path_copy);
 
-		if (!found) 
-		{
-			GPid pid;
-			gchar **args = g_strsplit(text, " ", -1);
+	if (!found) 
+	{
+		GPid pid;
+		gchar **args = g_strsplit(text, " ", -1);
 
-			// Spawn a new process asynchronously with the command and its arguments
-			GError *error = NULL;
-			gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
-			if (!success) 
-			{
-				g_warning("Failed to launch process: %s", error->message);
-				g_error_free(error);
-			}
-			else
-			{
-				g_spawn_close_pid(pid);
-				gtk_main_quit();
-			}
-			gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-			gtk_dialog_run(GTK_DIALOG(dialog));
-			gtk_widget_destroy(dialog);
+		GError *error = NULL;
+		gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, &error);
+		if (!success) 
+		{
+			g_warning("Failed to launch process: %s", error->message);
+			g_error_free(error);
 		}
+		else
+		{
+			g_spawn_close_pid(pid);
+			gtk_main_quit();
+		}
+		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+	}
+
 	}
 	else if ((void*)selected_row == (void*)web_row)
 	{
 		char command[256];
 		sprintf(command, "xdg-open '%s=%s'", webengine, text);
 
-		printf(command);
+		g_print("%s", command);
 		system(command);
 		gtk_main_quit();
 	}
