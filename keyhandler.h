@@ -83,18 +83,21 @@ static void on_entry_changed(GtkEntry *entry, FilterData *filter_data)
 				snprintf(buffer, 256, "%g", result);
 			}
 			gtk_label_set_text(GTK_LABEL(manswer), buffer);
+			gtk_widget_show(mathtext);
+			gtk_widget_show(math);
+			gtk_widget_show(manswer);
 			gtk_widget_hide(pr);
 		}
 		else if (strlen(filter_data->filter_text) > 0 && !isdigit(filter_data->filter_text[0])) 
 		{
-			gtk_widget_hide(mathtext);
+			gtk_widget_show(mathtext);
+			gtk_widget_hide(math);
+			gtk_widget_hide(manswer);
 			gtk_widget_show(pr);
 			gtk_widget_show(listbox2);
 		}
-
 	}
 }
-
 
 gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) 
 {

@@ -22,7 +22,7 @@ GtkWidget *window, *grid, *button, *cmd_row, *dialog, *web_row, *entry, *manswer
 *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
 *submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
 *wshowcmd, *wshowweb, *wshowcalc, *wshowscientific, *wexitwhenunfocused, *defbtn, *applybtn, 
-*treeview, *web_box, *wshowda, *scrolled_window;
+*treeview, *web_box, *wshowda, *scrolled_window, *math;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;

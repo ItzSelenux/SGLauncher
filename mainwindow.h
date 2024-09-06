@@ -186,7 +186,7 @@ void create_window()
 	grid = gtk_grid_new();
 	gtk_container_add(GTK_CONTAINER(window), grid);
 	mathtext = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-	GtkWidget *math = gtk_label_new("Math Answer: ");
+	math = gtk_label_new("Math Answer: ");
 	manswer = gtk_label_new("");
 	gtk_label_set_selectable(GTK_LABEL(manswer), TRUE);
 	pr = gtk_label_new("Press Enter to Run first item, or down to select another item");
@@ -195,6 +195,7 @@ void create_window()
 	{
 		gtk_box_pack_start(GTK_BOX(mathtext), math, TRUE, TRUE, 0);
 		gtk_box_pack_start(GTK_BOX(mathtext), manswer, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(mathtext), pr, TRUE, TRUE, 0);
 	}
 
 	gtk_widget_set_vexpand(scrolled_window, TRUE);
@@ -224,7 +225,6 @@ void create_window()
 	gtk_widget_set_size_request(listbox2, -1, -1);
 	gtk_widget_set_size_request(scrolled_window, -1, 256);
 	gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), pr, 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
 
 	if (sgcfg)

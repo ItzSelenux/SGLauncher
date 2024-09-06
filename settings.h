@@ -104,6 +104,7 @@ void readconf()
 	//READ THE CONF
 	if (home_dir == NULL)
 	{
+		nohome = 1;
 		return;
 	}
 	else
