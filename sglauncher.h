@@ -18,11 +18,11 @@ callconfig = 0, nohome = 0, restarting = 0;
 
 gboolean gshowcmd, gshowcalc, gshowweb, gshowda, gshowscientific, gexitwhenunfocused;
 
-GtkWidget *window, *grid, *button, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext, *listbox2,
-*pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item1, *submenu_item2,
-*submenu_item3, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder,
-*wshowcmd, *wshowweb, *wshowcalc, *wshowscientific, *wexitwhenunfocused, *defbtn, *applybtn, 
-*treeview, *web_box, *wshowda, *scrolled_window, *math;
+GtkWidget *window, *grid, *button, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext,
+*listbox2,*pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item_settings, *submenu_item_quickhelp,
+*submenu_item_about, *submenu_item4, *submenu_item5, *weblabel, *webcombo, *webctm, *worder, *wshowcmd,
+*wshowweb, *wshowcalc, *wshowscientific, *wexitwhenunfocused, *defbtn, *applybtn, *treeview,
+*web_box, *wshowda, *scrolled_window, *math, *submenu_item_onlinehelp, *submenu_menu_help, *submenu_item_help;
 
 GtkIconTheme *theme;
 GtkIconInfo *info;

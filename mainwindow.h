@@ -17,11 +17,11 @@ void exit_window()
 	}
 }
 
-void on_submenu_item2_selected(GtkMenuItem *menuitem, gpointer userdata) 
+void on_submenu_item_quickhelp_selected(GtkMenuItem *menuitem, gpointer userdata) 
 {
 	dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title(GTK_WINDOW(dialog), "Help");
-		gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 200);
+
 		theme = gtk_icon_theme_get_default();
 		info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
 		if (info != NULL)
@@ -38,7 +38,7 @@ void on_submenu_item2_selected(GtkMenuItem *menuitem, gpointer userdata)
 	gtk_widget_show_all(dialog);
 }
 
-void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata) 
+void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata) 
 {
 	dialog = gtk_about_dialog_new();
 		theme = gtk_icon_theme_get_default();
@@ -54,13 +54,44 @@ void on_submenu_item3_selected(GtkMenuItem *menuitem, gpointer userdata)
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2024 ItzSelenux for Simple GTK Desktop Environment");
 	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), pver);
-	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/sglauncher");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://sgde.github.io/sglauncher");
 	gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
 	gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_GPL_3_0);
 	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),"menulibre");
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+}
+
+void on_submenu_item_onlinehelp_selected(GtkMenuItem *menuitem, gpointer userdata) 
+{
+
+	dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Online Help - Confirmation");
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+
+	theme = gtk_icon_theme_get_default();
+	info = gtk_icon_theme_lookup_icon(theme, "dialog-question", 48, GTK_ICON_LOOKUP_USE_BUILTIN);
+	if (info != NULL)
+	{
+		icon = gtk_icon_info_load_icon(info, NULL);
+		gtk_window_set_icon(GTK_WINDOW(dialog), icon);
+		g_object_unref(icon);
+		g_object_unref(info);
+	}
+
+	gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
+	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_container_add(GTK_CONTAINER(dialog), vbox);
+
+	GtkWidget *question_label = gtk_label_new("Do you want to open this link?");
+	GtkWidget *link_button = gtk_link_button_new_with_label("https://github.com/SGDE/SGLauncher/wiki",
+		"https://github.com/SGDE/SGLauncher/wiki");
+
+	gtk_box_pack_start(GTK_BOX(vbox), question_label, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), link_button, FALSE, FALSE, 0);
+
+	gtk_widget_show_all(dialog);
 }
 
 void create_window()
@@ -73,7 +104,6 @@ void create_window()
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "SGLauncher");
 	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
-	gtk_widget_set_size_request(window, 333, 333);
 	g_signal_connect(window, "destroy", G_CALLBACK(exit_window), NULL);
 
 	theme = gtk_icon_theme_get_default();
@@ -106,21 +136,28 @@ void create_window()
 
 	if (!nohome)
 	{
-		submenu_item1 = gtk_menu_item_new_with_label("Settings");
+		submenu_item_settings = gtk_menu_item_new_with_label("Settings");
+		gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item_settings);
 	}
-	submenu_item2 = gtk_menu_item_new_with_label("Help");
-	submenu_item3 = gtk_menu_item_new_with_label("About");
 
-	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item1);
-	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item2);
-	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item3);
+	submenu_item_help = gtk_menu_item_new_with_label("Help");
+	submenu_menu_help = gtk_menu_new();
+		submenu_item_quickhelp = gtk_menu_item_new_with_label("Quick help");
+		submenu_item_onlinehelp = gtk_menu_item_new_with_label("Online help");
+		submenu_item_about = gtk_menu_item_new_with_label("About");
+
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu_menu_help), submenu_item_quickhelp);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu_menu_help), submenu_item_onlinehelp);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu_menu_help), submenu_item_about);
+
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(submenu_item_help), submenu_menu_help);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item_help);
 
 	gtk_widget_show_all(submenu);
 
 	gtk_menu_button_set_popup(GTK_MENU_BUTTON(button), submenu);
 
-
-	if (nocsd == 0)
+	if (!nocsd)
 	{
 		gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
 		gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
@@ -169,9 +206,10 @@ void create_window()
 	gtk_widget_set_size_request(cmd_row, -1, 32);
 
 	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), row);
-	g_signal_connect(submenu_item1, "activate", G_CALLBACK(showcfg), NULL);
-	g_signal_connect(submenu_item2, "activate", G_CALLBACK(on_submenu_item2_selected), NULL);
-	g_signal_connect(submenu_item3, "activate", G_CALLBACK(on_submenu_item3_selected), NULL);
+	g_signal_connect(submenu_item_settings, "activate", G_CALLBACK(showcfg), NULL);
+	g_signal_connect(submenu_item_quickhelp, "activate", G_CALLBACK(on_submenu_item_quickhelp_selected), NULL);
+	g_signal_connect(submenu_item_about, "activate", G_CALLBACK(on_submenu_item_about_selected), NULL);
+	g_signal_connect(submenu_item_onlinehelp, "activate", G_CALLBACK(on_submenu_item_onlinehelp_selected), NULL);
 	g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
 	g_signal_connect(treeview, "row-activated", G_CALLBACK(on_item_activated), NULL);
 
@@ -224,12 +262,15 @@ void create_window()
 
 	gtk_widget_set_size_request(listbox2, -1, -1);
 	gtk_widget_set_size_request(scrolled_window, -1, 256);
-	gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
+	if (nocsd)
+	{
+		gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
+	}
 	gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
 
 	if (sgcfg)
 	{
-		gtk_widget_activate(submenu_item1);
+		gtk_widget_activate(submenu_item_settings);
 	}
 	else
 	{

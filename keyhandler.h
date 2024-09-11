@@ -4,7 +4,7 @@ static gboolean on_filter_visible(GtkTreeModel *model, GtkTreeIter *iter, gpoint
 	gchar *name;
 	gboolean visible = FALSE;
 
-	gtk_tree_model_get(model, iter, 0, &name, -1);
+	gtk_tree_model_get(model, iter, 3, &name, -1);
 
 	gchar *name_lower = g_utf8_strdown(name, -1);
 	gchar *filter_text_lower = g_utf8_strdown(filter_data->filter_text, -1);
@@ -82,7 +82,10 @@ static void on_entry_changed(GtkEntry *entry, FilterData *filter_data)
 			{
 				snprintf(buffer, 256, "%g", result);
 			}
-			gtk_label_set_text(GTK_LABEL(manswer), buffer);
+
+			const gchar *message = isnan(result) ? "Invalid operation" : buffer;
+			gtk_label_set_text(GTK_LABEL(manswer), message);
+
 			gtk_widget_show(mathtext);
 			gtk_widget_show(math);
 			gtk_widget_show(manswer);
@@ -144,43 +147,43 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 		}
 	}
 
-else if (event->keyval == GDK_KEY_Return && gtk_widget_has_focus(entry))
-{
-	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
-	GtkTreeIter iter;
-	GtkTreePath *path;
-	gchar *app_name = NULL;
-	const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entry));
-
-	if (gtk_tree_model_get_iter_first(model, &iter))
+	else if (event->keyval == GDK_KEY_Return && gtk_widget_has_focus(entry))
 	{
-		gtk_tree_model_get(model, &iter, 0, &app_name, -1);
-		if (gtk_tree_model_iter_has_child(model, &iter))
+		GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+		GtkTreeIter iter;
+		GtkTreePath *path;
+		gchar *app_name = NULL;
+		const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entry));
+
+		if (gtk_tree_model_get_iter_first(model, &iter))
 		{
-			if (g_strcmp0(entry_text, app_name) != 0)
+			gtk_tree_model_get(model, &iter, 0, &app_name, -1);
+			if (gtk_tree_model_iter_has_child(model, &iter))
 			{
-				GtkTreeIter child_iter;
-				if (gtk_tree_model_iter_children(model, &child_iter, &iter))
+				if (g_strcmp0(entry_text, app_name) != 0)
 				{
-					path = gtk_tree_model_get_path(model, &child_iter);
-					gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
-					gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
-					gtk_tree_path_free(path);
-					g_free(app_name);
-					return 0;
+					GtkTreeIter child_iter;
+					if (gtk_tree_model_iter_children(model, &child_iter, &iter))
+					{
+						path = gtk_tree_model_get_path(model, &child_iter);
+						gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
+						gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
+						gtk_tree_path_free(path);
+						g_free(app_name);
+						return 0;
+					}
 				}
 			}
+			else
+			{
+				path = gtk_tree_model_get_path(model, &iter);
+				gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
+				gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
+				gtk_tree_path_free(path);
+			}
+			g_free(app_name);
 		}
-		else
-		{
-			path = gtk_tree_model_get_path(model, &iter);
-			gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
-			gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
-			gtk_tree_path_free(path);
-		}
-		g_free(app_name);
 	}
-}
 
 	else if(event->keyval == GDK_KEY_Down && gtk_widget_has_focus(entry))
 	{

@@ -49,7 +49,7 @@ gint gtk_tree_iter_compare_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
 
 void load_apps(GtkTreeView *treeview)
 {
-	store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
+	store = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf", 2, NULL);
@@ -60,12 +60,10 @@ void load_apps(GtkTreeView *treeview)
 	gtk_tree_view_append_column(treeview, column);
 
 	sorted_model = GTK_TREE_MODEL_SORT(gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(store)));
-
 	gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sorted_model), 0, (GtkTreeIterCompareFunc)gtk_tree_iter_compare_func, NULL, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sorted_model), 0, GTK_SORT_ASCENDING);
 
 	gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(sorted_model));
-//	g_object_unref(store);
 
 	for (int i = 0; i < sizeof(app_dirs) / sizeof(app_dirs[0]); i++)
 	{
@@ -131,7 +129,8 @@ void load_apps(GtkTreeView *treeview)
 
 			GtkTreeIter app_iter;
 			gtk_tree_store_append(store, &app_iter, NULL);
-			gtk_tree_store_set(store, &app_iter, 0, app_name, 1, toexec, 2, icon_pixbuf, -1);
+			gchar *merged_data = g_strdup_printf("%s%s%s", app_name, toexec, icon_name);
+			gtk_tree_store_set(store, &app_iter, 0, app_name, 1, toexec, 2, icon_pixbuf, 3, merged_data, -1);
 
 			// Handling Desktop Actions
 			gchar **groups = g_key_file_get_groups(key_file, NULL);
@@ -148,9 +147,11 @@ void load_apps(GtkTreeView *treeview)
 						{
 							GtkTreeIter action_iter;
 							gtk_tree_store_append(store, &action_iter, &app_iter);
-							gtk_tree_store_set(store, &action_iter, 0, action_name, 1, exec_value, 2, icon_pixbuf, -1);
+							gchar *action_merged_data = g_strdup_printf("%s%s%s", action_name, exec_value, icon_name);
+							gtk_tree_store_set(store, &action_iter, 0, action_name, 1, exec_value, 2, icon_pixbuf, 3, action_merged_data, -1);
 							g_free(action_name);
 							g_free(exec_value);
+							g_free(action_merged_data);
 						}
 					}
 				}
@@ -161,6 +162,7 @@ void load_apps(GtkTreeView *treeview)
 			g_free(icon_name);
 			g_clear_object(&icon_pixbuf);
 			g_free(toexec);
+			g_free(merged_data);
 			g_key_file_free(key_file);
 			g_free(path);
 		}
