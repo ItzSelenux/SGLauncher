@@ -49,8 +49,8 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
-        body: Release ci-${{ env.DATE }}
-        name: ${{ github.event.head_commit.message }}
+        name: Release ci-${{ env.DATE }}
+        body: ${{ github.event.head_commit.message }}
         tag_name: ${{ env.DATE }}
         files: |
             ${{ env.GH_RELEASE_FILE }}

@@ -22,7 +22,7 @@ test:
 install:
 	install -Dm755 $(EXE) $(BIN_DIR)/$(EXE)
 	install -Dm644 $(EXE).desktop $(APP_DIR)/$(EXE).desktop
-	install -Dm644 icons/menulibre.svg $(PREFIX)/share/icons/hicolor/64x64/apps/menulibre.png
+	install -Dm644 icons/sglauncher.svg $(PREFIX)/share/icons/hicolor/48x48/apps/sglauncher.svg
 uninstall:
 	rm $(BIN_DIR)/$(EXE)
 	rm $(APP_DIR)/$(EXE).desktop

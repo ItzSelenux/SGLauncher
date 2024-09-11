@@ -11,7 +11,7 @@ const gchar *cweb, *cwebng, *corder, *active_text;
 const char* app_dirs[] = {"/usr/share/applications", "", NULL};
 const char* quick_dirs[] = {NULL};
 const char* pver = mver;
-char *pm, *webengine, *cwengine, cengine[ML], *home_dir, config_file_path[256];
+char *pm, *webengine, *cwengine, cengine[ML], *home_dir, config_file_path[256], *iconame;
 int wengine, order = 0, showweb = 1, showcmd = 1, showcalc = 1, showda = 1,
 	showscientific = 1, exitwhenunfocused = 0, sgcfg, nocsd = 0, 
 callconfig = 0, nohome = 0, restarting = 0;

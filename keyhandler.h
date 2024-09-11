@@ -158,9 +158,12 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 		if (gtk_tree_model_get_iter_first(model, &iter))
 		{
 			gtk_tree_model_get(model, &iter, 0, &app_name, -1);
+			gchar *entry_text_lower = g_ascii_strdown(entry_text, -1);
+			gchar *app_name_lower = g_ascii_strdown(app_name, -1);
+
 			if (gtk_tree_model_iter_has_child(model, &iter))
 			{
-				if (g_strcmp0(entry_text, app_name) != 0)
+				if (g_strstr_len(app_name_lower, -1, entry_text_lower) == NULL)
 				{
 					GtkTreeIter child_iter;
 					if (gtk_tree_model_iter_children(model, &child_iter, &iter))
@@ -172,6 +175,13 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 						g_free(app_name);
 						return 0;
 					}
+				}
+				else
+				{
+					path = gtk_tree_model_get_path(model, &iter);
+					gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
+					gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
+					gtk_tree_path_free(path);
 				}
 			}
 			else

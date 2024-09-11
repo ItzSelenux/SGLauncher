@@ -23,7 +23,7 @@ void on_submenu_item_quickhelp_selected(GtkMenuItem *menuitem, gpointer userdata
 		gtk_window_set_title(GTK_WINDOW(dialog), "Help");
 
 		theme = gtk_icon_theme_get_default();
-		info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
+		info = gtk_icon_theme_lookup_icon(theme, iconame, 48, 0);
 		if (info != NULL)
 		{
 			icon = gtk_icon_info_load_icon(info, NULL);
@@ -42,7 +42,7 @@ void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata)
 {
 	dialog = gtk_about_dialog_new();
 		theme = gtk_icon_theme_get_default();
-		info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
+		info = gtk_icon_theme_lookup_icon(theme, iconame, 48, 0);
 		if (info != NULL)
 		{
 			icon = gtk_icon_info_load_icon(info, NULL);
@@ -57,7 +57,7 @@ void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata)
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://sgde.github.io/sglauncher");
 	gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
 	gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_GPL_3_0);
-	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),"menulibre");
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),iconame);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -107,13 +107,26 @@ void create_window()
 	g_signal_connect(window, "destroy", G_CALLBACK(exit_window), NULL);
 
 	theme = gtk_icon_theme_get_default();
-	info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
-	if (info != NULL) 
+	info = gtk_icon_theme_lookup_icon(theme, "sglauncher", 48, 0);
+	if (info != NULL)
 	{
-		GdkPixbuf *icon = gtk_icon_info_load_icon(info, NULL);
+		icon = gtk_icon_info_load_icon(info, NULL);
+		iconame="sglauncher";
+		g_object_unref(info);
+	}
+	else
+	{
+		info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
+		if (info != NULL) {
+			icon = gtk_icon_info_load_icon(info, NULL);
+			iconame="menulibre";
+			g_object_unref(info);
+		}
+	}
+
+	if (icon != NULL) {
 		gtk_window_set_icon(GTK_WINDOW(window), icon);
 		g_object_unref(icon);
-		g_object_unref(info);
 	}
 
 	headerbar = gtk_header_bar_new();
@@ -122,7 +135,13 @@ void create_window()
 	entry = gtk_entry_new();
 
 	button = gtk_menu_button_new();
-	image = gtk_image_new_from_icon_name("menulibre", GTK_ICON_SIZE_BUTTON);
+	GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
+	GdkPixbuf *pixbuf = gtk_icon_theme_load_icon(icon_theme, iconame, 64, GTK_ICON_LOOKUP_USE_BUILTIN, NULL);
+
+	GdkPixbuf *scaled_pixbuf = gdk_pixbuf_scale_simple(pixbuf, 16, 16, GDK_INTERP_BILINEAR);
+
+	image = gtk_image_new_from_pixbuf(scaled_pixbuf);
+
 	gtk_container_add(GTK_CONTAINER(button), image);
 
 	gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), button);

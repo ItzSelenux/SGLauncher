@@ -22,7 +22,7 @@ Standalone Simple GTK Launcher with some features
 
 ## Configuration:
 
-You can use the Settings (sglauncher-cfg) program to easily edit the values with a GUI
+You can use the Settings (sglauncher --cfg) program to easily edit the values with a GUI
 
 | Item | Description | Possible values| Values explanation| example
 | --- | --- | --- | --- | --- |
