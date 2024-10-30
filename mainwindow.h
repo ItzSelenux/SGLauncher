@@ -1,6 +1,5 @@
-void create_window();
-
-void exit_window()
+void create_window(void);
+void exit_window(void)
 {
 	if (restarting)
 	{
@@ -21,16 +20,7 @@ void on_submenu_item_quickhelp_selected(GtkMenuItem *menuitem, gpointer userdata
 {
 	dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title(GTK_WINDOW(dialog), "Help");
-
-		theme = gtk_icon_theme_get_default();
-		info = gtk_icon_theme_lookup_icon(theme, iconame, 48, 0);
-		if (info != NULL)
-		{
-			icon = gtk_icon_info_load_icon(info, NULL);
-			gtk_window_set_icon(GTK_WINDOW(dialog), icon);
-			g_object_unref(icon);
-			g_object_unref(info);
-		}
+		window_set_icon(GTK_WINDOW(window), program_icon);
 		gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
 		GtkWidget *label = gtk_label_new(" - SGLauncher is a quick launcher that can run programs, desktop actions, run on terminal or search on web\n - You can run the first item on the list by pressing enter, or press down to select other item \n - If the first element has a desktop action and the name match with the search box text, the desktop action will be executed \n - You can press CTRL+T to run on terminal and CTRL+B to Search on Web\n - You can customize the program in the Settings or editing the config file on ~/.config/sglauncher.conf");
 	gtk_container_add(GTK_CONTAINER(dialog), label);
@@ -38,65 +28,62 @@ void on_submenu_item_quickhelp_selected(GtkMenuItem *menuitem, gpointer userdata
 	gtk_widget_show_all(dialog);
 }
 
-void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata) 
+void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata)
 {
 	dialog = gtk_about_dialog_new();
-		theme = gtk_icon_theme_get_default();
-		info = gtk_icon_theme_lookup_icon(theme, iconame, 48, 0);
-		if (info != NULL)
-		{
-			icon = gtk_icon_info_load_icon(info, NULL);
-			gtk_window_set_icon(GTK_WINDOW(dialog), icon);
-			g_object_unref(icon);
-			g_object_unref(info);
-		}
-	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLauncher");
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2024 ItzSelenux for Simple GTK Desktop Environment");
-	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
+		window_set_icon(GTK_WINDOW(dialog), program_icon);
+	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "SGLaucher");
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), pver);
-	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://sgde.github.io/sglauncher");
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2024 ItsZariep");
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://codeberg.org/ItsZariep/SGLauncher");
 	gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
 	gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_GPL_3_0);
-	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),iconame);
-	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),program_icon);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 }
 
+
 void on_submenu_item_onlinehelp_selected(GtkMenuItem *menuitem, gpointer userdata) 
 {
+	const gchar *link = "https://codeberg.org/ItsZariep/SGLauncher/wiki/?action=_pages";
 
-	dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Online Help - Confirmation");
-	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+	dialog = gtk_dialog_new_with_buttons("Documentation available on Codeberg", NULL, GTK_DIALOG_MODAL, NULL, NULL);
+	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget *info_image = gtk_image_new_from_icon_name("dialog-information", GTK_ICON_SIZE_DIALOG);
+	GtkWidget *label = gtk_label_new("Documentation available at:");
 
-	theme = gtk_icon_theme_get_default();
-	info = gtk_icon_theme_lookup_icon(theme, "dialog-question", 48, GTK_ICON_LOOKUP_USE_BUILTIN);
-	if (info != NULL)
-	{
-		icon = gtk_icon_info_load_icon(info, NULL);
-		gtk_window_set_icon(GTK_WINDOW(dialog), icon);
-		g_object_unref(icon);
-		g_object_unref(info);
-	}
+	gchar *markup = g_strdup_printf("<a href=\"%s\">%s</a>", link, link);
+	GtkWidget *link_label = gtk_label_new(NULL);
+	gtk_label_set_markup(GTK_LABEL(link_label), markup);
+	g_free(markup);
 
-	gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
-	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add(GTK_CONTAINER(dialog), vbox);
+	gtk_label_set_use_markup(GTK_LABEL(link_label), TRUE);
+	gtk_label_set_use_underline(GTK_LABEL(link_label), TRUE);
 
-	GtkWidget *question_label = gtk_label_new("Do you want to open this link?");
-	GtkWidget *link_button = gtk_link_button_new_with_label("https://github.com/SGDE/SGLauncher/wiki",
-		"https://github.com/SGDE/SGLauncher/wiki");
+	gtk_box_pack_start(GTK_BOX(box), info_image, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(box), link_label, FALSE, FALSE, 0);
 
-	gtk_box_pack_start(GTK_BOX(vbox), question_label, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), link_button, FALSE, FALSE, 0);
-
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), box);
 	gtk_widget_show_all(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
-void create_window()
+void create_window(void)
 {
-	char local_app_dir[1024] = "";
+	program_icon_names = g_ptr_array_new();
+	g_ptr_array_add(program_icon_names, "sglauncher");
+	g_ptr_array_add(program_icon_names, "menulibre");
+	g_ptr_array_add(program_icon_names, "application-menu");
+	g_ptr_array_add(program_icon_names, "application-menu-symbolic");
+	g_ptr_array_add(program_icon_names, "gnome-menu");
+	g_ptr_array_add(program_icon_names, "start-here");
+	program_icon = probe_icons_from_theme(program_icon_names);
+
+	gchar local_app_dir[1024] = "";
 	sprintf(local_app_dir, "%s/.local/share/applications", home_dir);
 	app_dirs[2] = local_app_dir;
 
@@ -106,28 +93,7 @@ void create_window()
 	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 	g_signal_connect(window, "destroy", G_CALLBACK(exit_window), NULL);
 
-	theme = gtk_icon_theme_get_default();
-	info = gtk_icon_theme_lookup_icon(theme, "sglauncher", 48, 0);
-	if (info != NULL)
-	{
-		icon = gtk_icon_info_load_icon(info, NULL);
-		iconame="sglauncher";
-		g_object_unref(info);
-	}
-	else
-	{
-		info = gtk_icon_theme_lookup_icon(theme, "menulibre", 48, 0);
-		if (info != NULL) {
-			icon = gtk_icon_info_load_icon(info, NULL);
-			iconame="menulibre";
-			g_object_unref(info);
-		}
-	}
-
-	if (icon != NULL) {
-		gtk_window_set_icon(GTK_WINDOW(window), icon);
-		g_object_unref(icon);
-	}
+	window_set_icon(GTK_WINDOW(window), program_icon);
 
 	headerbar = gtk_header_bar_new();
 	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -136,7 +102,7 @@ void create_window()
 
 	button = gtk_menu_button_new();
 	GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
-	GdkPixbuf *pixbuf = gtk_icon_theme_load_icon(icon_theme, iconame, 64, GTK_ICON_LOOKUP_USE_BUILTIN, NULL);
+	GdkPixbuf *pixbuf = gtk_icon_theme_load_icon(icon_theme, program_icon, 64, GTK_ICON_LOOKUP_USE_BUILTIN, NULL);
 
 	GdkPixbuf *scaled_pixbuf = gdk_pixbuf_scale_simple(pixbuf, 16, 16, GDK_INTERP_BILINEAR);
 
@@ -145,11 +111,6 @@ void create_window()
 	gtk_container_add(GTK_CONTAINER(button), image);
 
 	gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), button);
-	wtitle = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(wtitle), "<b>SGLauncher</b>");
-	gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), wtitle);
-	gtk_widget_set_hexpand(GTK_WIDGET(entry), FALSE);
-	gtk_widget_set_vexpand(GTK_WIDGET(entry), FALSE);
 
 	submenu = gtk_menu_new();
 
@@ -178,18 +139,32 @@ void create_window()
 
 	if (!nocsd)
 	{
-		gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
 		gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
+		if (!hidetitle)
+		{
+			wtitle = gtk_label_new(NULL);
+			gtk_label_set_markup(GTK_LABEL(wtitle), "<b>SGLauncher</b>");
+			gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), wtitle);
+			gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), entry);
+		}
+		else
+		{
+			GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+			gtk_box_pack_start(GTK_BOX(box), entry, TRUE, TRUE, 0);
+			gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), box);
+			gtk_widget_set_hexpand(entry, TRUE);
+			gtk_widget_set_hexpand(box, TRUE);
+		}
 	}
 
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-	treeview = gtk_tree_view_new();
-	gtk_tree_view_set_activate_on_single_click(GTK_TREE_VIEW(treeview), TRUE);
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
-	gtk_container_add(GTK_CONTAINER(scrolled_window), treeview);
+	applist = gtk_tree_view_new();
+	gtk_tree_view_set_activate_on_single_click(GTK_TREE_VIEW(applist), TRUE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(applist), FALSE);
+	gtk_container_add(GTK_CONTAINER(scrolled_window), applist);
 	gtk_widget_grab_focus(entry);
 
 	cmd_row = gtk_list_box_row_new();
@@ -216,7 +191,6 @@ void create_window()
 	{
 		gtk_list_box_insert(GTK_LIST_BOX(listbox2), cmd_row, -1);
 	}
-	
 	if (showweb == 1)
 	{
 		gtk_list_box_insert(GTK_LIST_BOX(listbox2), web_row, -1);
@@ -224,22 +198,21 @@ void create_window()
 	gtk_widget_set_size_request(web_row, -1, 32);
 	gtk_widget_set_size_request(cmd_row, -1, 32);
 
-	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), row);
+	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), NULL);
 	g_signal_connect(submenu_item_settings, "activate", G_CALLBACK(showcfg), NULL);
 	g_signal_connect(submenu_item_quickhelp, "activate", G_CALLBACK(on_submenu_item_quickhelp_selected), NULL);
 	g_signal_connect(submenu_item_about, "activate", G_CALLBACK(on_submenu_item_about_selected), NULL);
 	g_signal_connect(submenu_item_onlinehelp, "activate", G_CALLBACK(on_submenu_item_onlinehelp_selected), NULL);
 	g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
-	g_signal_connect(treeview, "row-activated", G_CALLBACK(on_item_activated), NULL);
+	g_signal_connect(applist, "row-activated", G_CALLBACK(on_item_activated), NULL);
 
-	//g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
+	g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
 
-	//if (exitwhenunfocused)
-	//{
-		//g_signal_connect(window, "focus-out-event", G_CALLBACK(on_focus_out), NULL);
-	//}
+	if (exitwhenunfocused)
+	{
+		g_signal_connect(window, "focus-out-event", G_CALLBACK(on_focus_out), window);
+	}
 
-	// Load apps into the list box
 	grid = gtk_grid_new();
 	gtk_container_add(GTK_CONTAINER(window), grid);
 	mathtext = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
@@ -281,12 +254,20 @@ void create_window()
 
 	gtk_widget_set_size_request(listbox2, -1, -1);
 	gtk_widget_set_size_request(scrolled_window, -1, 256);
+
 	if (nocsd)
 	{
-		gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
+		if (entryonbottom)
+		{
+			gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 5, 1, 1);
+			gtk_grid_attach(GTK_GRID(grid), entry, 0, 6, 1, 1);
+		}
+		else
+		{
+			gtk_grid_attach(GTK_GRID(grid), entry, 0, 1, 1, 1);
+			gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
+		}
 	}
-	gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
-
 	if (sgcfg)
 	{
 		gtk_widget_activate(submenu_item_settings);
@@ -294,17 +275,17 @@ void create_window()
 	else
 	{
 		gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-		load_apps(GTK_TREE_VIEW(treeview));
+		load_apps(GTK_TREE_VIEW(applist));
 
 		filter_model = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(sorted_model), NULL));
 
 		filter_data.filter_text = g_strdup("");
 		filter_data.filter = filter_model;
-		filter_data.treeview = GTK_TREE_VIEW(treeview);  
+		filter_data.treeview = GTK_TREE_VIEW(applist);  
 
 		gtk_tree_model_filter_set_visible_func(filter_model,
 			(GtkTreeModelFilterVisibleFunc) on_filter_visible, &filter_data, NULL);
-			gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(filter_model));
+			gtk_tree_view_set_model(GTK_TREE_VIEW(applist), GTK_TREE_MODEL(filter_model));
 			filter_data.entry = GTK_ENTRY(entry);
 
 		g_signal_connect(entry, "changed", G_CALLBACK(on_entry_changed), &filter_data);

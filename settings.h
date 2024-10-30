@@ -1,77 +1,82 @@
-void exit_window();
+void exit_window(void);
 
-void updateconf(GtkButton *button, gpointer user_data) 
+void updateconf(GtkButton *widget, gpointer user_data) 
 {
-	int reset = GPOINTER_TO_INT(user_data);
+	gint reset = GPOINTER_TO_INT(user_data);
+
+	const gchar *activetext = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
+				*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
+				*ncengine,
+				*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
+				*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
 
 	FILE *fp = fopen(config_file_path, "w+");
-	if (fp == NULL)
+	if (fp == NULL) 
 	{
 		perror("Failed to open config file");
 		exit(EXIT_FAILURE);
 	}
 
-	if (reset)
+	if (reset) 
 	{
-	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "Are you sure you want to restore SGLauncher settings as default?");
+		dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "Are you sure you want to restore SGLauncher settings as default?");
 		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 		gtk_window_set_title(GTK_WINDOW(dialog), "Confirmation");
 		gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 		gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-		if (result == GTK_RESPONSE_OK)
+		if (result == GTK_RESPONSE_OK) 
 		{
-			fprintf(fp, "[SGLauncher Configuration File]\n");
-			fprintf(fp, "cengine=https://search.disroot.org/search?q\n");
-			fprintf(fp, "wengine=1\n");
-			fprintf(fp, "order=0\n");
-			fprintf(fp, "showda=1\n");
-			fprintf(fp, "showweb=1\n");
-			fprintf(fp, "showcmd=1\n");
-			fprintf(fp, "showcalc=1\n");
-			fprintf(fp, "showscientific=1\n");
-			//fprintf(fp, "exitwhenunfocused=1\n");
-		}
-		else
+			ncengine = "https://search.disroot.org/search?q";
+			wengine = 1;
+			order = 0;
+			showda = 1;
+			showweb = 1;
+			showcmd = 1;
+			showcalc = 1;
+			showscientific = 1;
+			exitwhenunfocused = 0;
+		} 
+		else 
 		{
 			printf("Operation cancelled.\n");
+			return;
 		}
 		gtk_widget_destroy(dialog);
-	}
-	else
+	} 
+	else 
 	{
-		gshowcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
-		gshowweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
-		gshowcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
-		gshowscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
-		gshowda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
-		//gexitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
-		const gchar *active_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
-			*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
-			*ncengine,
-			*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
-			*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
+		showcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
+		showweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
+		showcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
+		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
+		showda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
+		entryonbottom = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wentryonbottom));
+		exitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
+		usecsd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wusecsd));
+		hidetitle = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(whidetitle));
 
-		if (entry_text && strlen(entry_text) > 0)
+		if (entry_text && strlen(entry_text) > 0) 
 			ncengine = entry_text;
-		else
+		else 
 			ncengine = placeholder_text;
 
 		g_print("%s", ncengine);
 		cweb = NULL;
 		cwebng = gtk_entry_get_text(GTK_ENTRY(webctm));
 		corder = NULL;
-		if (active_text != NULL) 
+
+		if (activetext) 
 		{
-			if (g_strcmp0(active_text, "Google") == 0) 
+			if (g_strcmp0(activetext, "Google") == 0) 
 				cweb = "1";
-			else if (g_strcmp0(active_text, "DuckDuckGo") == 0) 
+			else if (g_strcmp0(activetext, "DuckDuckGo") == 0) 
 				cweb = "0";
-			else if (g_strcmp0(active_text, "Bing") == 0) 
+			else if (g_strcmp0(activetext, "Bing") == 0) 
 				cweb = "2";
-			else if (g_strcmp0(active_text, "Custom") == 0) 
+			else if (g_strcmp0(activetext, "Custom") == 0) 
 				cweb = "3";
 
-			if (active_order != NULL) 
+			if (active_order) 
 			{
 				if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) 
 					corder = "1";
@@ -83,23 +88,32 @@ void updateconf(GtkButton *button, gpointer user_data)
 					corder = "3";
 			}
 		}
-		fprintf(fp, "[SGLauncher Configuration File]\n");
-		fprintf(fp, "cengine=%s\n", ncengine);
-		fprintf(fp, "wengine=%s\n", cweb);
-		fprintf(fp, "order=%s\n", corder);
-		fprintf(fp, "showda=%d\n", gshowda);
-		fprintf(fp, "showweb=%d\n", gshowweb);
-		fprintf(fp, "showcmd=%d\n", gshowcmd);
-		fprintf(fp, "showcalc=%d\n", gshowcalc);
-		fprintf(fp, "showscientific=%d\n", gshowscientific);
-		//fprintf(fp, "exitwhenunfocused=%d\n", gexitwhenunfocused);
 	}
+
+	fprintf(fp, "[SGLauncher Configuration File]\n");
+	fprintf(fp, "[Elements]\n");
+	fprintf(fp, "cengine=%s\n", ncengine);
+	fprintf(fp, "wengine=%s\n", cweb);
+	fprintf(fp, "showcmd=%d\n", showcmd);
+	fprintf(fp, "showweb=%d\n", showweb);
+	fprintf(fp, "showcalc=%d\n", showcalc);
+	fprintf(fp, "showscientific=%d\n", showscientific);
+	fprintf(fp, "[View]\n");
+	fprintf(fp, "order=%s\n", corder);
+	fprintf(fp, "showda=%d\n", showda);
+	fprintf(fp, "entryonbottom=%d\n", entryonbottom);
+	fprintf(fp, "[Window]\n");
+	fprintf(fp, "usecsd=%d\n", usecsd);
+	fprintf(fp, "hidetitle=%d\n", hidetitle);
+	fprintf(fp, "exitwhenunfocused=%d\n", exitwhenunfocused);
+
 	fclose(fp);
 	restarting = 1;
 	exit_window();
 }
 
-void readconf()
+
+void readconf(void)
 {
 	//READ THE CONF
 	if (home_dir == NULL)
@@ -136,6 +150,18 @@ void readconf()
 					showscientific = atoi(value_str);
 				else if (strcmp(name, "showda") == 0) 
 					showda = atoi(value_str);
+				else if (strcmp(name, "entryonbottom") == 0) 
+					entryonbottom = atoi(value_str);
+				else if (strcmp(name, "usecsd") == 0)
+				{
+					usecsd = atoi(value_str);
+					if (!fcsd)
+					{
+						nocsd = (usecsd == 0);
+					}
+				}
+				else if (strcmp(name, "hidetitle") == 0) 
+					hidetitle = atoi(value_str);
 				else if (strcmp(name, "exitwhenunfocused") == 0) 
 					exitwhenunfocused = atoi(value_str);
 			}
@@ -161,7 +187,7 @@ void readconf()
 			webengine = "https://duckduckgo.com/?q";
 			break;
 	}
-
-	// Use the values that were read from the file
-	printf("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\n", webengine, order, showda, showcmd, showweb, showcalc, showscientific);
+	printf("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\nExitWhenUnfocused: %d\nUseCSD: %d\nHideTitle: %d\n",
+		webengine, order, showda, showcmd, showweb, showcalc, showscientific, exitwhenunfocused,
+		usecsd, hidetitle);
 }

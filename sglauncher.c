@@ -4,6 +4,7 @@ int main(int argc, char *argv[])
 	const char* env_sgcsd = getenv("SGCSD");
 	home_dir = getenv("HOME");
 	nocsd = (env_sgcsd != NULL) ? atoi(env_sgcsd) == 0 : 0;
+	fcsd = (env_sgcsd != NULL) ? 1 : 0;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -11,6 +12,7 @@ int main(int argc, char *argv[])
 		if (strcmp(argv[i], "--nocsd") == 0)
 		{
 			nocsd = 1;
+			fcsd = 1;
 		}
 	}
 

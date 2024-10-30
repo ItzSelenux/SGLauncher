@@ -46,7 +46,6 @@ gint gtk_tree_iter_compare_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
 	return result;
 }
 
-
 void load_apps(GtkTreeView *treeview)
 {
 	store = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);

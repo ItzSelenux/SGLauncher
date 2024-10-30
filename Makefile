@@ -1,5 +1,5 @@
-DATE := $(shell git log -n 1 --format="%ad" --date=format-local:'%Y%m%d/%H:%M:%S')
-CFLAGS = `pkg-config --cflags gtk+-3.0` -Dmver=\"$(DATE)\" -Wall
+DATE := $(shell git log -n 1 --format="%ad" --date=format-local:'%Y%m%d.%H%M')
+CFLAGS = `pkg-config --cflags gtk+-3.0` -Dmver=\"$(DATE)\"
 CC = cc
 LIBS = `pkg-config --libs gtk+-3.0`
 SRC = sglauncher.c sglauncher-cfg.c

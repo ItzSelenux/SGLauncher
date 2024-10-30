@@ -1,13 +1,13 @@
 static gboolean on_filter_visible(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
-	FilterData *filter_data = (FilterData *)data;
+	FilterData *filterdata = (FilterData *)data;
 	gchar *name;
 	gboolean visible = FALSE;
 
 	gtk_tree_model_get(model, iter, 3, &name, -1);
 
 	gchar *name_lower = g_utf8_strdown(name, -1);
-	gchar *filter_text_lower = g_utf8_strdown(filter_data->filter_text, -1);
+	gchar *filter_text_lower = g_utf8_strdown(filterdata->filter_text, -1);
 
 	visible = (name_lower && filter_text_lower && g_strrstr(name_lower, filter_text_lower) != NULL);
 
@@ -24,7 +24,7 @@ static gboolean on_filter_visible(GtkTreeModel *model, GtkTreeIter *iter, gpoint
 		if (visible)
 		{
 			GtkTreePath *path = gtk_tree_model_get_path(model, iter);
-			gtk_tree_view_expand_to_path(filter_data->treeview, path);
+			gtk_tree_view_expand_to_path(filterdata->treeview, path);
 			gtk_tree_path_free(path);
 		}
 	}
@@ -36,39 +36,39 @@ static gboolean on_filter_visible(GtkTreeModel *model, GtkTreeIter *iter, gpoint
 	return visible;
 }
 
-static void on_entry_changed(GtkEntry *entry, FilterData *filter_data)
+static void on_entry_changed(GtkEntry *target, FilterData *filterdata)
 {
-	if (filter_data->filter == NULL)
+	if (filterdata->filter == NULL)
 	{
 		return;
 	}
 
-	g_free(filter_data->filter_text);
-	filter_data->filter_text = g_strdup(gtk_entry_get_text(entry));
+	g_free(filterdata->filter_text);
+	filterdata->filter_text = g_strdup(gtk_entry_get_text(target));
 
-	gtk_tree_model_filter_refilter(filter_data->filter);
+	gtk_tree_model_filter_refilter(filterdata->filter);
 
 	GtkTreeIter iter;
-	GtkTreeModel *model = GTK_TREE_MODEL(filter_data->filter);
+	GtkTreeModel *model = GTK_TREE_MODEL(filterdata->filter);
 	gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
 
 	while (valid)
 	{
-		if (on_filter_visible(model, &iter, filter_data))
+		if (on_filter_visible(model, &iter, filterdata))
 		{
 			GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-			gtk_tree_view_expand_to_path(filter_data->treeview, path);
+			gtk_tree_view_expand_to_path(filterdata->treeview, path);
 			gtk_tree_path_free(path);
 		}
 		valid = gtk_tree_model_iter_next(model, &iter);
 	}
 
-	if (filter_data->filter_text != NULL)
+	if (filterdata->filter_text != NULL)
 	{
-		if (strlen(filter_data->filter_text) > 0 && isdigit(filter_data->filter_text[0])) 
+		if (strlen(filterdata->filter_text) > 0 && isdigit(filterdata->filter_text[0])) 
 		{
 			double minscientific = 999999;
-			double result = evaluate((char*)filter_data->filter_text);
+			double result = evaluate((char*)filterdata->filter_text);
 			char buffer[256];
 			if (result < minscientific)
 			{
@@ -91,7 +91,7 @@ static void on_entry_changed(GtkEntry *entry, FilterData *filter_data)
 			gtk_widget_show(manswer);
 			gtk_widget_hide(pr);
 		}
-		else if (strlen(filter_data->filter_text) > 0 && !isdigit(filter_data->filter_text[0])) 
+		else if (strlen(filterdata->filter_text) > 0 && !isdigit(filterdata->filter_text[0])) 
 		{
 			gtk_widget_show(mathtext);
 			gtk_widget_hide(math);
@@ -125,9 +125,8 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 				g_warning("Failed to start program: %s", error->message);
 				gchar **args = g_strsplit(text, " ", -1);
 
-				// Spawn a new process asynchronously with the command and its arguments
-				GError *error = NULL;
-				gboolean success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
+				error = NULL;
+				success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
 				if (!success) 
 				{
 					g_warning("Failed to launch process: %s", error->message);
@@ -149,7 +148,7 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 
 	else if (event->keyval == GDK_KEY_Return && gtk_widget_has_focus(entry))
 	{
-		GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+		GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(applist));
 		GtkTreeIter iter;
 		GtkTreePath *path;
 		gchar *app_name = NULL;
@@ -169,8 +168,8 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 					if (gtk_tree_model_iter_children(model, &child_iter, &iter))
 					{
 						path = gtk_tree_model_get_path(model, &child_iter);
-						gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
-						gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
+						gtk_tree_view_set_cursor(GTK_TREE_VIEW(applist), path, NULL, FALSE);
+						gtk_tree_view_row_activated(GTK_TREE_VIEW(applist), path, NULL);
 						gtk_tree_path_free(path);
 						g_free(app_name);
 						return 0;
@@ -179,16 +178,16 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 				else
 				{
 					path = gtk_tree_model_get_path(model, &iter);
-					gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
-					gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
+					gtk_tree_view_set_cursor(GTK_TREE_VIEW(applist), path, NULL, FALSE);
+					gtk_tree_view_row_activated(GTK_TREE_VIEW(applist), path, NULL);
 					gtk_tree_path_free(path);
 				}
 			}
 			else
 			{
 				path = gtk_tree_model_get_path(model, &iter);
-				gtk_tree_view_set_cursor(GTK_TREE_VIEW(treeview), path, NULL, FALSE);
-				gtk_tree_view_row_activated(GTK_TREE_VIEW(treeview), path, NULL);
+				gtk_tree_view_set_cursor(GTK_TREE_VIEW(applist), path, NULL, FALSE);
+				gtk_tree_view_row_activated(GTK_TREE_VIEW(applist), path, NULL);
 				gtk_tree_path_free(path);
 			}
 			g_free(app_name);
@@ -197,7 +196,7 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 
 	else if(event->keyval == GDK_KEY_Down && gtk_widget_has_focus(entry))
 	{
-		gtk_widget_grab_focus(treeview);
+		gtk_widget_grab_focus(applist);
 	}
 	else if((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_b))
 	{
@@ -212,23 +211,48 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 
 gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-	if (event->type == GDK_BUTTON_PRESS && event->button == 3)
-	{
-		GtkWidget *submenu = GTK_WIDGET(data);
-		gtk_menu_popup_at_pointer(GTK_MENU(submenu), NULL);
-		return TRUE;
-	}
-	return FALSE;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3)
+    {
+        submenu = GTK_WIDGET(data);
+        gtk_menu_popup_at_pointer(GTK_MENU(submenu), NULL);
+        return TRUE;
+    }
+    else if (event->type == GDK_BUTTON_PRESS && event->button == 1)
+    {
+        ismoving = 1;
+    }
+    return FALSE;
+}
+
+gboolean close_window_if_unfocused(gpointer widget)
+{
+    // Check if the submenu or dialog is visible or if we are moving
+    if (gtk_widget_get_visible(submenu) || gtk_widget_get_visible(dialog) || ismoving)
+    {
+        ismoving = 0; // Reset ismoving state
+        return FALSE; // Do not close the window
+    }
+
+    // Get the current modifier state
+    GdkModifierType modifier_state = gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
+    GdkSeat *seat = gdk_display_get_default_seat(gdk_display_get_default());
+    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    guint button_state = 0;
+
+    // Get the button state
+    gdk_device_get_state(pointer, gtk_widget_get_window(GTK_WIDGET(widget)), NULL, &button_state);
+
+    // Check if the window does not have focus and no modifier keys are pressed
+    if (!gtk_window_has_toplevel_focus(GTK_WINDOW(widget)) && button_state == 0 && 
+        !(modifier_state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_SUPER_MASK))) // Include GDK_SUPER_MASK if you use Windows or macOS
+    {
+        gtk_widget_destroy(GTK_WIDGET(widget)); 
+    }
+    return FALSE;
 }
 
 gboolean on_focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 {
-	GtkWidget *window = gtk_widget_get_toplevel(widget);
-
-	GtkWidget *current_focus = gtk_window_get_focus(GTK_WINDOW(window));
-	if (current_focus == NULL)
-	{
-		gtk_main_quit();
-	}
-	return FALSE;
+    g_timeout_add(100, close_window_if_unfocused, widget); // Call close_window_if_unfocused after a short delay
+    return FALSE;
 }
