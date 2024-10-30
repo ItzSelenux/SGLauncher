@@ -268,6 +268,10 @@ void create_window(void)
 			gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
 		}
 	}
+	else
+	{
+		gtk_grid_attach(GTK_GRID(grid), mathtext, 0, 2, 1, 1);
+	}
 	if (sgcfg)
 	{
 		gtk_widget_activate(submenu_item_settings);

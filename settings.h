@@ -125,6 +125,12 @@ void readconf(void)
 	{
 		snprintf(config_file_path, sizeof(config_file_path), "%s/.config/sglauncher.conf", home_dir);
 		FILE *file = fopen(config_file_path, "r");
+
+		if (file == NULL)
+		{
+			return;
+		}
+
 		char line[ML];
 		// Read each line from the file and parse the variable assignments
 		while (fgets(line, ML, file) != NULL)
