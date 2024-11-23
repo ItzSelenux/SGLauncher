@@ -1,8 +1,8 @@
 DATE := $(shell git log -n 1 --format="%ad" --date=format-local:'%Y%m%d.%H%M')
-CFLAGS = `pkg-config --cflags gtk+-3.0` -Dmver=\"$(DATE)\"
+CFLAGS = `pkg-config --cflags gtk+-3.0` -Dpver=\"$(DATE)\"
 CC = cc
 LIBS = `pkg-config --libs gtk+-3.0`
-SRC = sglauncher.c sglauncher-cfg.c
+SRC = sglauncher.c
 OBJ = $(SRC:.c=.o)
 EXE = sglauncher
 
@@ -26,6 +26,6 @@ install:
 uninstall:
 	rm $(BIN_DIR)/$(EXE)
 	rm $(APP_DIR)/$(EXE).desktop
-	rm $(PREFIX)/share/icons/hicolor/64x64/apps/menulibre.png
+	rm $(PREFIX)/share/icons/hicolor/64x64/apps/sglauncher.svg
 clean:
 	rm -f $(OBJ) $(EXE) debug

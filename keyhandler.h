@@ -57,7 +57,7 @@ static void on_entry_changed(GtkEntry *target, FilterData *filterdata)
 		if (on_filter_visible(model, &iter, filterdata))
 		{
 			GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-			gtk_tree_view_expand_to_path(filterdata->treeview, path);
+			//gtk_tree_view_expand_to_path(filterdata->treeview, path);
 			gtk_tree_path_free(path);
 		}
 		valid = gtk_tree_model_iter_next(model, &iter);
@@ -91,7 +91,7 @@ static void on_entry_changed(GtkEntry *target, FilterData *filterdata)
 			gtk_widget_show(manswer);
 			gtk_widget_hide(pr);
 		}
-		else if (strlen(filterdata->filter_text) > 0 && !isdigit(filterdata->filter_text[0])) 
+		else if (strlen(filterdata->filter_text) > 0 && !isdigit(filterdata->filter_text[0]))
 		{
 			gtk_widget_show(mathtext);
 			gtk_widget_hide(math);
@@ -196,7 +196,10 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 
 	else if(event->keyval == GDK_KEY_Down && gtk_widget_has_focus(entry))
 	{
-		gtk_widget_grab_focus(applist);
+		if (useiconview)
+			gtk_widget_grab_focus(iconview);
+		else
+			gtk_widget_grab_focus(applist);
 	}
 	else if((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_b))
 	{
@@ -211,48 +214,44 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 
 gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    if (event->type == GDK_BUTTON_PRESS && event->button == 3)
-    {
-        submenu = GTK_WIDGET(data);
-        gtk_menu_popup_at_pointer(GTK_MENU(submenu), NULL);
-        return TRUE;
-    }
-    else if (event->type == GDK_BUTTON_PRESS && event->button == 1)
-    {
-        ismoving = 1;
-    }
-    return FALSE;
+	if (event->type == GDK_BUTTON_PRESS && event->button == 3)
+	{
+		submenu = GTK_WIDGET(data);
+		gtk_menu_popup_at_pointer(GTK_MENU(submenu), NULL);
+		return TRUE;
+	}
+	else if (event->type == GDK_BUTTON_PRESS && event->button == 1)
+	{
+		ismoving = 1;
+	}
+	return FALSE;
 }
 
 gboolean close_window_if_unfocused(gpointer widget)
 {
-    // Check if the submenu or dialog is visible or if we are moving
-    if (gtk_widget_get_visible(submenu) || gtk_widget_get_visible(dialog) || ismoving)
-    {
-        ismoving = 0; // Reset ismoving state
-        return FALSE; // Do not close the window
-    }
+	if (gtk_widget_get_visible(submenu) || gtk_widget_get_visible(dialog) || ismoving)
+	{
+		ismoving = 0;
+		return FALSE;
+	}
 
-    // Get the current modifier state
-    GdkModifierType modifier_state = gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
-    GdkSeat *seat = gdk_display_get_default_seat(gdk_display_get_default());
-    GdkDevice *pointer = gdk_seat_get_pointer(seat);
-    guint button_state = 0;
+	GdkModifierType modifier_state = gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
+	GdkSeat *seat = gdk_display_get_default_seat(gdk_display_get_default());
+	GdkDevice *pointer = gdk_seat_get_pointer(seat);
+	guint button_state = 0;
 
-    // Get the button state
-    gdk_device_get_state(pointer, gtk_widget_get_window(GTK_WIDGET(widget)), NULL, &button_state);
+	gdk_device_get_state(pointer, gtk_widget_get_window(GTK_WIDGET(widget)), NULL, &button_state);
 
-    // Check if the window does not have focus and no modifier keys are pressed
-    if (!gtk_window_has_toplevel_focus(GTK_WINDOW(widget)) && button_state == 0 && 
-        !(modifier_state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_SUPER_MASK))) // Include GDK_SUPER_MASK if you use Windows or macOS
-    {
-        gtk_widget_destroy(GTK_WIDGET(widget)); 
-    }
-    return FALSE;
+	if (!gtk_window_has_toplevel_focus(GTK_WINDOW(widget)) && button_state == 0 && 
+		!(modifier_state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_SUPER_MASK)))
+	{
+		gtk_widget_destroy(GTK_WIDGET(widget));
+	}
+	return FALSE;
 }
 
 gboolean on_focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 {
-    g_timeout_add(100, close_window_if_unfocused, widget); // Call close_window_if_unfocused after a short delay
-    return FALSE;
+	g_timeout_add(100, close_window_if_unfocused, widget);
+	return FALSE;
 }

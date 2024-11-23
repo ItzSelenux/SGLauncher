@@ -12,6 +12,7 @@ typedef struct
 	GtkTreeModelFilter *filter;
 	gchar *filter_text;
 	GtkTreeView *treeview;
+	GtkIconView *iconview;
 } FilterData;
 FilterData filter_data;
 
@@ -48,6 +49,29 @@ gint gtk_tree_iter_compare_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
 
 void load_apps(GtkTreeView *treeview)
 {
+	const gchar *const *data_dirs = g_get_system_data_dirs();
+	const gchar *user_dir = g_get_user_data_dir();
+
+	size_t num_data_dirs = 0;
+	for (const gchar *const *dir = data_dirs; *dir != NULL; dir++)
+	{
+		num_data_dirs++;
+	}
+
+	const gchar **app_dirs = g_malloc((num_data_dirs + 1 + 1) * sizeof(gchar *));
+
+	size_t z = 0;
+	for (const gchar *const *dir = data_dirs; *dir != NULL; dir++)
+	{
+		app_dirs[z] = g_strconcat(*dir, "applications", NULL);
+		z++;
+	}
+
+	app_dirs[z] = g_strconcat(user_dir, "/applications", NULL);
+	z++;
+
+	app_dirs[z] = NULL;
+
 	store = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
 	renderer = gtk_cell_renderer_pixbuf_new();
@@ -64,7 +88,11 @@ void load_apps(GtkTreeView *treeview)
 
 	gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(sorted_model));
 
-	for (int i = 0; i < sizeof(app_dirs) / sizeof(app_dirs[0]); i++)
+	gtk_icon_view_set_model(GTK_ICON_VIEW(iconview), GTK_TREE_MODEL(sorted_model));
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(iconview), 0);
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(iconview), 2);
+
+	for (int i = 0; app_dirs[i] != NULL; i++)
 	{
 		DIR *dir = opendir(app_dirs[i]);
 		if (dir == NULL) continue;
@@ -106,8 +134,7 @@ void load_apps(GtkTreeView *treeview)
 			else
 			{
 				GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
-				GtkIconInfo *icon_info = gtk_icon_theme_lookup_icon(icon_theme, icon_name, 16, GTK_ICON_LOOKUP_USE_BUILTIN);
-
+				GtkIconInfo *icon_info = gtk_icon_theme_lookup_icon(icon_theme, icon_name, iconsize, GTK_ICON_LOOKUP_USE_BUILTIN);
 				if (icon_info)
 				{
 					icon_pixbuf = gtk_icon_info_load_icon(icon_info, &error);
@@ -117,13 +144,13 @@ void load_apps(GtkTreeView *treeview)
 
 			if (icon_pixbuf)
 			{
-				GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, 16, 16, GDK_INTERP_BILINEAR);
+				GdkPixbuf *resized_icon = gdk_pixbuf_scale_simple(icon_pixbuf, iconsize, iconsize, GDK_INTERP_BILINEAR);
 				g_object_unref(icon_pixbuf);
 				icon_pixbuf = resized_icon;
 			}
 			else
 			{
-				icon_pixbuf = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), "application-x-executable", 16, 0, NULL);
+				icon_pixbuf = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), "application-x-executable", iconsize, 0, NULL);
 			}
 
 			GtkTreeIter app_iter;

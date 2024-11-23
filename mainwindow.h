@@ -83,12 +83,9 @@ void create_window(void)
 	g_ptr_array_add(program_icon_names, "start-here");
 	program_icon = probe_icons_from_theme(program_icon_names);
 
-	gchar local_app_dir[1024] = "";
-	sprintf(local_app_dir, "%s/.local/share/applications", home_dir);
-	app_dirs[2] = local_app_dir;
-
 	listbox2 = gtk_list_box_new();
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_widget_set_size_request(window, 640, 400);
 	gtk_window_set_title(GTK_WINDOW(window), "SGLauncher");
 	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 	g_signal_connect(window, "destroy", G_CALLBACK(exit_window), NULL);
@@ -158,13 +155,22 @@ void create_window(void)
 	}
 
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_hide(gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(scrolled_window)));
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
-		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		GTK_POLICY_ALWAYS, GTK_POLICY_AUTOMATIC);
 
+	iconview = gtk_icon_view_new();
+		gtk_icon_view_set_activate_on_single_click(GTK_ICON_VIEW(iconview),TRUE);
+		gtk_icon_view_set_item_padding(GTK_ICON_VIEW(iconview),0);
 	applist = gtk_tree_view_new();
-	gtk_tree_view_set_activate_on_single_click(GTK_TREE_VIEW(applist), TRUE);
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(applist), FALSE);
-	gtk_container_add(GTK_CONTAINER(scrolled_window), applist);
+		gtk_tree_view_set_activate_on_single_click(GTK_TREE_VIEW(applist), TRUE);
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(applist), FALSE);
+
+	if (useiconview)
+		gtk_container_add(GTK_CONTAINER(scrolled_window), iconview);
+	else
+		gtk_container_add(GTK_CONTAINER(scrolled_window), applist);
+
 	gtk_widget_grab_focus(entry);
 
 	cmd_row = gtk_list_box_row_new();
@@ -205,6 +211,9 @@ void create_window(void)
 	g_signal_connect(submenu_item_onlinehelp, "activate", G_CALLBACK(on_submenu_item_onlinehelp_selected), NULL);
 	g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
 	g_signal_connect(applist, "row-activated", G_CALLBACK(on_item_activated), NULL);
+	g_signal_connect(iconview, "item-activated", G_CALLBACK(on_item_activated), NULL);
+	//if (useiconview)
+		//g_signal_connect(window, "check-resize", G_CALLBACK(adjust_iconview), NULL);
 
 	g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
 
@@ -285,11 +294,15 @@ void create_window(void)
 
 		filter_data.filter_text = g_strdup("");
 		filter_data.filter = filter_model;
-		filter_data.treeview = GTK_TREE_VIEW(applist);  
+		filter_data.treeview = GTK_TREE_VIEW(applist);
+		filter_data.iconview = GTK_ICON_VIEW(iconview);
 
 		gtk_tree_model_filter_set_visible_func(filter_model,
 			(GtkTreeModelFilterVisibleFunc) on_filter_visible, &filter_data, NULL);
-			gtk_tree_view_set_model(GTK_TREE_VIEW(applist), GTK_TREE_MODEL(filter_model));
+			if (useiconview)
+				gtk_icon_view_set_model(GTK_ICON_VIEW(iconview), GTK_TREE_MODEL(filter_model));
+			else
+				gtk_tree_view_set_model(GTK_TREE_VIEW(applist), GTK_TREE_MODEL(filter_model));
 			filter_data.entry = GTK_ENTRY(entry);
 
 		g_signal_connect(entry, "changed", G_CALLBACK(on_entry_changed), &filter_data);

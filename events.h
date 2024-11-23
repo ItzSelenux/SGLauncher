@@ -30,3 +30,15 @@ void window_set_icon(GtkWindow *target, gchar *iconname)
 		g_object_unref(icon);
 		g_object_unref(info);
 }
+
+//void adjust_iconview(GtkWidget *target, gpointer *input)
+//{
+	//gint new_width, new_height, new_columns;
+	//gtk_window_get_size(GTK_WINDOW(window), &new_width, &new_height);
+
+	//new_columns = new_width / (iconsize * 4.375); 
+
+	//gtk_icon_view_set_columns(GTK_ICON_VIEW(iconview), new_columns);
+	//gtk_icon_view_set_item_padding(GTK_ICON_VIEW(iconview), new_columns);
+	//g_print("%d, %d\n", new_width, iconsize / (new_columns*new_columns));
+//}

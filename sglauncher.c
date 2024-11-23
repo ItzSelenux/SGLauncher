@@ -1,20 +1,15 @@
 #include "sglauncher.h"
 int main(int argc, char *argv[]) 
 {
-	const char* env_sgcsd = getenv("SGCSD");
-	home_dir = getenv("HOME");
+	gchar* env_sgcsd = getenv("SGCSD");
+	home_dir = g_get_home_dir();
 	nocsd = (env_sgcsd != NULL) ? atoi(env_sgcsd) == 0 : 0;
 	fcsd = (env_sgcsd != NULL) ? 1 : 0;
 
-	for (int i = 1; i < argc; i++)
-	{
-		sgcfg = strcmp(argv[i], "--cfg") == 0;
-		if (strcmp(argv[i], "--nocsd") == 0)
-		{
-			nocsd = 1;
-			fcsd = 1;
-		}
-	}
+	GOptionContext *context = g_option_context_new("");
+	g_option_context_add_main_entries(context, entries, NULL);
+	g_option_context_parse(context, &argc, &argv, NULL);
+	nocsd = fcsd;
 
 	readconf();
 	gtk_init(&argc, &argv);

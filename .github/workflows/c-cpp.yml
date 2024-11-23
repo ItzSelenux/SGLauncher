@@ -33,7 +33,8 @@ jobs:
 
     - name: Build with GCC
       run: |
-        make CC=gcc 
+        make CC=gcc
+        strip sglauncher
         mv sglauncher ${{ env.GH_RELEASE_FILE }}
 
     - name: Build with Clang
@@ -43,7 +44,7 @@ jobs:
         
     - name: Build with -Werror
       run: |
-       cc `pkg-config --cflags gtk+-3.0` -Dmver=\"NULL\" -Werror -o sglauncher sglauncher.o `pkg-config --libs gtk+-3.0` -lm --verbose
+       cc `pkg-config --cflags gtk+-3.0` -Dmver=\"NULL\" -Werror -Wall -o sglauncher sglauncher.o `pkg-config --libs gtk+-3.0` -lm --verbose
       continue-on-error: true
 
     - name: Release

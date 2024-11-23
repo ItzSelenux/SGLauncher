@@ -1,6 +1,11 @@
 void on_item_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *null, gpointer user_data)
 {
-	GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+	GtkTreeModel *model;
+	if (useiconview)
+		model = gtk_icon_view_get_model(GTK_ICON_VIEW(iconview));
+	else
+		model = gtk_tree_view_get_model(treeview);
+
 	GtkTreeIter iter;
 
 	if (gtk_tree_model_get_iter(model, &iter, path))

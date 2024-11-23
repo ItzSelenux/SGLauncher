@@ -25,7 +25,6 @@ void on_dialog_destroy(GtkWidget *widget, gpointer data)
 void togglewidget(GtkWidget *input, gpointer data)
 {
 	GtkWidget *target= GTK_WIDGET(data);
-	
 	if (gtk_widget_get_visible(target)) 
 	{
 		gtk_widget_hide(target);
@@ -65,7 +64,7 @@ void showcfg(void)
 		wshowscientific = gtk_check_button_new_with_label("Use scientific notation on math answers");
 			gtk_widget_set_direction(wshowscientific, GTK_TEXT_DIR_RTL);
 
-		worder = gtk_combo_box_text_new(); 
+		worder = gtk_combo_box_text_new();
 			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(worder), "Horizontal - Apps at top");
 			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(worder), "Horizontal - Apps at bottom");
 			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(worder), "Vertical - Apps at left");
@@ -74,6 +73,10 @@ void showcfg(void)
 			gtk_widget_set_direction(wshowda, GTK_TEXT_DIR_RTL);
 		wentryonbottom = gtk_check_button_new_with_label("Search entry on bottom");
 			gtk_widget_set_direction(wentryonbottom, GTK_TEXT_DIR_RTL);
+		wuseiconview = gtk_check_button_new_with_label("Use icon view");
+			gtk_widget_set_direction(wuseiconview, GTK_TEXT_DIR_RTL);
+		GtkAdjustment *Icon_adjustment = gtk_adjustment_new(1, 0, 1024, 1, 1, 0);
+			wiconsize = gtk_spin_button_new(Icon_adjustment, 1, 0);
 
 		wusecsd = gtk_check_button_new_with_label("Use CSD Decoration");
 			gtk_widget_set_direction(wusecsd, GTK_TEXT_DIR_RTL);
@@ -102,10 +105,13 @@ void showcfg(void)
 	GtkWidget *tab2 = gtk_grid_new();
 	gtk_grid_set_column_homogeneous(GTK_GRID(tab2), TRUE);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab2, gtk_label_new("View"));
-		gtk_grid_attach(GTK_GRID(tab2), gtk_label_new("Item Order:"), 0, 0, 1, 1);    
+		gtk_grid_attach(GTK_GRID(tab2), gtk_label_new("Item order:"), 0, 0, 1, 1);
 		gtk_grid_attach(GTK_GRID(tab2), worder, 1, 0, 1, 1);
-		gtk_grid_attach(GTK_GRID(tab2), wshowda, 0, 1, 2, 1);
-		gtk_grid_attach(GTK_GRID(tab2), wentryonbottom, 0, 2, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab2), gtk_label_new("Icon Size"), 0, 1, 1, 1);
+			gtk_grid_attach(GTK_GRID(tab2), wiconsize, 1, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(tab2), wuseiconview, 0, 2, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab2), wshowda, 0, 3, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab2), wentryonbottom, 0, 4, 2, 1);
 
 	GtkWidget *tab3 = gtk_grid_new();
 	gtk_grid_set_column_homogeneous(GTK_GRID(tab3), TRUE);
@@ -124,6 +130,7 @@ void showcfg(void)
 	gtk_container_add(GTK_CONTAINER(dialog), confbox);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowda), showda);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wuseiconview), useiconview);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wentryonbottom), entryonbottom);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowcmd), showcmd);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowweb), showweb);
@@ -143,6 +150,7 @@ void showcfg(void)
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(webcombo), wengine);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(worder), order);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(wiconsize), iconsize);
 
 	g_signal_connect(G_OBJECT(webcombo), "changed", G_CALLBACK(on_webcombo_changed), webctm);
 
@@ -155,7 +163,8 @@ void showcfg(void)
 
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	gtk_widget_show_all(dialog);
-	if (wengine != 3 )
+
+	if (wengine != 3)
 	{
 		gtk_widget_hide(webctm);
 		gtk_widget_hide(weblabel);

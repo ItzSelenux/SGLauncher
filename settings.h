@@ -10,11 +10,11 @@ void updateconf(GtkButton *widget, gpointer user_data)
 				*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
 				*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
 
-	FILE *fp = fopen(config_file_path, "w+");
+	FILE *fp = fopen(config_file_path, "a+");
 	if (fp == NULL) 
 	{
-		perror("Failed to open config file");
-		exit(EXIT_FAILURE);
+		g_warning("Failed to open config file");
+		return;
 	}
 
 	if (reset) 
@@ -24,7 +24,7 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		gtk_window_set_title(GTK_WINDOW(dialog), "Confirmation");
 		gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 		gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-		if (result == GTK_RESPONSE_OK) 
+		if (result == GTK_RESPONSE_OK)
 		{
 			ncengine = "https://search.disroot.org/search?q";
 			wengine = 1;
@@ -35,10 +35,12 @@ void updateconf(GtkButton *widget, gpointer user_data)
 			showcalc = 1;
 			showscientific = 1;
 			exitwhenunfocused = 0;
+			iconsize = 16;
 		} 
-		else 
+		else if  (result == GTK_RESPONSE_CANCEL) 
 		{
-			printf("Operation cancelled.\n");
+			g_info("Operation cancelled.\n");
+			gtk_widget_destroy(dialog);
 			return;
 		}
 		gtk_widget_destroy(dialog);
@@ -50,6 +52,7 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		showcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
 		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
 		showda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
+		useiconview = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wuseiconview));
 		entryonbottom = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wentryonbottom));
 		exitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
 		usecsd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wusecsd));
@@ -63,6 +66,8 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		g_print("%s", ncengine);
 		cweb = NULL;
 		cwebng = gtk_entry_get_text(GTK_ENTRY(webctm));
+		iconsize = gtk_spin_button_get_value(GTK_SPIN_BUTTON(wiconsize));
+		g_print("%d", iconsize);
 		corder = NULL;
 
 		if (activetext) 
@@ -90,6 +95,9 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		}
 	}
 
+	fclose(fp);
+	fp = fopen(config_file_path, "w");
+
 	fprintf(fp, "[SGLauncher Configuration File]\n");
 	fprintf(fp, "[Elements]\n");
 	fprintf(fp, "cengine=%s\n", ncengine);
@@ -100,6 +108,8 @@ void updateconf(GtkButton *widget, gpointer user_data)
 	fprintf(fp, "showscientific=%d\n", showscientific);
 	fprintf(fp, "[View]\n");
 	fprintf(fp, "order=%s\n", corder);
+	fprintf(fp, "iconsize=%d\n", iconsize);
+	fprintf(fp, "useiconview=%d\n", useiconview);
 	fprintf(fp, "showda=%d\n", showda);
 	fprintf(fp, "entryonbottom=%d\n", entryonbottom);
 	fprintf(fp, "[Window]\n");
@@ -123,56 +133,67 @@ void readconf(void)
 	}
 	else
 	{
-		snprintf(config_file_path, sizeof(config_file_path), "%s/.config/sglauncher.conf", home_dir);
-		FILE *file = fopen(config_file_path, "r");
+		config_file_path = g_build_filename(g_get_user_config_dir(), "sglauncher.conf", NULL);
 
-		if (file == NULL)
+		GKeyFile *key_file;
+		GError *error = NULL;
+
+		key_file = g_key_file_new();
+
+		if (!g_key_file_load_from_file(key_file, config_file_path, G_KEY_FILE_NONE, &error))
 		{
+			g_warning("Failed to load configuration file: %s", error->message);
+			g_error_free(error);
+			g_key_file_free(key_file);
 			return;
 		}
 
-		char line[ML];
-		// Read each line from the file and parse the variable assignments
-		while (fgets(line, ML, file) != NULL)
-		{
-			char *name = strtok(line, "=");
-			char *value_str = strtok(NULL, "=");
+		if (g_key_file_has_key(key_file, "Elements", "cengine", NULL))
+			g_strlcpy(cengine, g_key_file_get_string(key_file, "Elements", "cengine", NULL), sizeof(cengine));
 
-			if (name != NULL && value_str != NULL)
+		if (g_key_file_has_key(key_file, "Elements", "wengine", NULL))
+			wengine = g_key_file_get_integer(key_file, "Elements", "wengine", NULL);
+
+		if (g_key_file_has_key(key_file, "Elements", "showcmd", NULL))
+			showcmd = g_key_file_get_integer(key_file, "Elements", "showcmd", NULL);
+
+		if (g_key_file_has_key(key_file, "Elements", "showweb", NULL))
+			showweb = g_key_file_get_integer(key_file, "Elements", "showweb", NULL);
+
+		if (g_key_file_has_key(key_file, "Elements", "showcalc", NULL))
+			showcalc = g_key_file_get_integer(key_file, "Elements", "showcalc", NULL);
+
+		if (g_key_file_has_key(key_file, "Elements", "showscientific", NULL))
+			showscientific = g_key_file_get_integer(key_file, "Elements", "showscientific", NULL);
+
+
+		if (g_key_file_has_key(key_file, "View", "order", NULL))
+			order = g_key_file_get_integer(key_file, "View", "order", NULL);
+		if (g_key_file_has_key(key_file, "View", "useiconview", NULL))
+			useiconview = g_key_file_get_integer(key_file, "View", "useiconview", NULL);
+		if (g_key_file_has_key(key_file, "View", "iconsize", NULL))
+			iconsize = g_key_file_get_integer(key_file, "View", "iconsize", NULL);
+		if (g_key_file_has_key(key_file, "View", "showda", NULL))
+			showda = g_key_file_get_integer(key_file, "View", "showda", NULL);
+		if (g_key_file_has_key(key_file, "View", "entryonbottom", NULL))
+			entryonbottom = g_key_file_get_integer(key_file, "View", "entryonbottom", NULL);
+
+		if (g_key_file_has_key(key_file, "Window", "usecsd", NULL))
+		{
+			usecsd = g_key_file_get_integer(key_file, "Window", "usecsd", NULL);
+			if (!fcsd)
 			{
-				if (strcmp(name, "order") == 0) 
-					order = atoi(value_str);
-				else if (strcmp(name, "cengine") == 0) 
-					strncpy(cengine, value_str, sizeof(cengine));
-				else if (strcmp(name, "wengine") == 0)
-					wengine = atoi(value_str);
-				else if (strcmp(name, "showweb") == 0) 
-					showweb = atoi(value_str);
-				else if (strcmp(name, "showcmd") == 0) 
-					showcmd = atoi(value_str);
-				else if (strcmp(name, "showcalc") == 0) 
-					showcalc = atoi(value_str);
-				else if (strcmp(name, "showscientific") == 0) 
-					showscientific = atoi(value_str);
-				else if (strcmp(name, "showda") == 0) 
-					showda = atoi(value_str);
-				else if (strcmp(name, "entryonbottom") == 0) 
-					entryonbottom = atoi(value_str);
-				else if (strcmp(name, "usecsd") == 0)
-				{
-					usecsd = atoi(value_str);
-					if (!fcsd)
-					{
-						nocsd = (usecsd == 0);
-					}
-				}
-				else if (strcmp(name, "hidetitle") == 0) 
-					hidetitle = atoi(value_str);
-				else if (strcmp(name, "exitwhenunfocused") == 0) 
-					exitwhenunfocused = atoi(value_str);
+				nocsd = (usecsd == 0);
 			}
 		}
-		fclose(file);
+
+		if (g_key_file_has_key(key_file, "Window", "hidetitle", NULL))
+			hidetitle = g_key_file_get_integer(key_file, "Window", "hidetitle", NULL);
+
+		if (g_key_file_has_key(key_file, "Window", "exitwhenunfocused", NULL))
+			exitwhenunfocused = g_key_file_get_integer(key_file, "Window", "exitwhenunfocused", NULL);
+
+		g_key_file_free(key_file);
 	}
 
 	switch (wengine)
@@ -193,7 +214,7 @@ void readconf(void)
 			webengine = "https://duckduckgo.com/?q";
 			break;
 	}
-	printf("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\nExitWhenUnfocused: %d\nUseCSD: %d\nHideTitle: %d\n",
+	g_print("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\nExitWhenUnfocused: %d\nUseCSD: %d\nHideTitle: %d\nIcon Size: %d\n",
 		webengine, order, showda, showcmd, showweb, showcalc, showscientific, exitwhenunfocused,
-		usecsd, hidetitle);
+		usecsd, hidetitle, iconsize);
 }

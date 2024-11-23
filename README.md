@@ -9,6 +9,7 @@ Simple GTK Launcher
 - [x] Show calc answers
 - [x] Show Actions
 - [x] Customizable layout
+- [x] Optional icon view
 - [x] A simple configuration tool
 
 ## Build
@@ -17,5 +18,3 @@ Main Program:
 ```
 make
 ```
-
-Standalone Simple GTK Launcher with some features
