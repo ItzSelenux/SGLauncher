@@ -3,51 +3,54 @@ void exit_window(void);
 void updateconf(GtkButton *widget, gpointer user_data) 
 {
 	gint reset = GPOINTER_TO_INT(user_data);
+	GKeyFile *config = g_key_file_new();
+	GError *error = NULL;
 
 	const gchar *activetext = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
-				*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
-				*ncengine,
-				*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
-				*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
+		*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
+		*ncengine = NULL,
+		*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
+		*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
 
-	FILE *fp = fopen(config_file_path, "a+");
-	if (fp == NULL) 
+	if (!g_key_file_load_from_file(config, config_file_path, G_KEY_FILE_KEEP_COMMENTS, &error))
 	{
-		g_warning("Failed to open config file");
-		return;
+		g_warning("Error loading config file: %s", error->message);
+		g_clear_error(&error);
 	}
 
 	if (reset) 
 	{
-		dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "Are you sure you want to restore SGLauncher settings as default?");
+		dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_OK_CANCEL,
+			"Are you sure you want to restore SGLauncher settings as default?");
 		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 		gtk_window_set_title(GTK_WINDOW(dialog), "Confirmation");
 		gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 		gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-		if (result == GTK_RESPONSE_OK)
-		{
-			ncengine = "https://search.disroot.org/search?q";
-			wengine = 1;
-			order = 0;
-			showda = 1;
-			showweb = 1;
-			showcmd = 1;
-			showcalc = 1;
-			showscientific = 1;
-			exitwhenunfocused = 0;
-			iconsize = 16;
-		} 
-		else if  (result == GTK_RESPONSE_CANCEL) 
+		gtk_widget_destroy(dialog);
+
+		if (result == GTK_RESPONSE_CANCEL) 
 		{
 			g_info("Operation cancelled.\n");
-			gtk_widget_destroy(dialog);
 			return;
 		}
-		gtk_widget_destroy(dialog);
+
+		g_key_file_set_string(config, "Elements", "cengine", "https://search.disroot.org/search?q");
+		g_key_file_set_string(config, "Elements", "wengine", "1");
+		g_key_file_set_integer(config, "Elements", "showcmd", 1);
+		g_key_file_set_integer(config, "Elements", "showweb", 1);
+		g_key_file_set_integer(config, "Elements", "showcalc", 1);
+		g_key_file_set_integer(config, "Elements", "showscientific", 1);
+		g_key_file_set_integer(config, "Elements", "closeterm", 0);
+		g_key_file_set_integer(config, "Elements", "showda", 1);
+		g_key_file_set_string(config, "View", "order", "0");
+		g_key_file_set_integer(config, "View", "iconsize", 16);
+		g_key_file_set_integer(config, "Window", "exitwhenunfocused", 0);
 	} 
 	else 
 	{
 		showcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
+		closeterm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wcloseterm));
 		showweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
 		showcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
 		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
@@ -57,65 +60,50 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		exitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
 		usecsd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wusecsd));
 		hidetitle = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(whidetitle));
+		iconsize = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(wiconsize));
+		ncengine = (entry_text && strlen(entry_text) > 0) ? entry_text : placeholder_text;
 
-		if (entry_text && strlen(entry_text) > 0) 
-			ncengine = entry_text;
-		else 
-			ncengine = placeholder_text;
-
-		cweb = NULL;
-		cwebng = gtk_entry_get_text(GTK_ENTRY(webctm));
-		iconsize = gtk_spin_button_get_value(GTK_SPIN_BUTTON(wiconsize));
-		corder = NULL;
-
+		gchar *cweb = NULL;
 		if (activetext) 
 		{
-			if (g_strcmp0(activetext, "Google") == 0) 
-				cweb = "1";
-			else if (g_strcmp0(activetext, "DuckDuckGo") == 0) 
-				cweb = "0";
-			else if (g_strcmp0(activetext, "Bing") == 0) 
-				cweb = "2";
-			else if (g_strcmp0(activetext, "Custom") == 0) 
-				cweb = "3";
-
-			if (active_order) 
-			{
-				if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) 
-					corder = "1";
-				else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) 
-					corder = "0";
-				else if (g_strcmp0(active_order, "Vertical - Apps at left") == 0) 
-					corder = "2";
-				else if (g_strcmp0(active_order, "Vertical - Apps at right") == 0) 
-					corder = "3";
-			}
+			if (g_strcmp0(activetext, "Google") == 0) cweb = "1";
+			else if (g_strcmp0(activetext, "DuckDuckGo") == 0) cweb = "0";
+			else if (g_strcmp0(activetext, "Bing") == 0) cweb = "2";
+			else if (g_strcmp0(activetext, "Custom") == 0) cweb = "3";
 		}
+
+		gchar *corder = NULL;
+		if (active_order)
+		{
+			if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) corder = "1";
+			else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) corder = "0";
+			else if (g_strcmp0(active_order, "Vertical - Apps at left") == 0) corder = "2";
+			else if (g_strcmp0(active_order, "Vertical - Apps at right") == 0) corder = "3";
+		}
+
+		g_key_file_set_string(config, "Elements", "cengine", ncengine);
+		g_key_file_set_string(config, "Elements", "wengine", cweb);
+		g_key_file_set_integer(config, "Elements", "showcmd", showcmd);
+		g_key_file_set_integer(config, "Elements", "closeterm", closeterm);
+		g_key_file_set_integer(config, "Elements", "showweb", showweb);
+		g_key_file_set_integer(config, "Elements", "showcalc", showcalc);
+		g_key_file_set_integer(config, "Elements", "showscientific", showscientific);
+		g_key_file_set_integer(config, "View", "iconsize", iconsize);
+		g_key_file_set_integer(config, "View", "showda", showda);
+		g_key_file_set_string(config, "View", "order", corder);
+		g_key_file_set_integer(config, "Window", "usecsd", usecsd);
+		g_key_file_set_integer(config, "Window", "hidetitle", hidetitle);
+		g_key_file_set_integer(config, "Window", "exitwhenunfocused", exitwhenunfocused);
 	}
 
-	fclose(fp);
-	fp = fopen(config_file_path, "w");
+	if (!g_key_file_save_to_file(config, config_file_path, &error)) 
+	{
+		g_warning("Error saving config file: %s", error->message);
+		g_clear_error(&error);
+	}
 
-	fprintf(fp, "[SGLauncher Configuration File]\n");
-	fprintf(fp, "[Elements]\n");
-	fprintf(fp, "cengine=%s\n", ncengine);
-	fprintf(fp, "wengine=%s\n", cweb);
-	fprintf(fp, "showcmd=%d\n", showcmd);
-	fprintf(fp, "showweb=%d\n", showweb);
-	fprintf(fp, "showcalc=%d\n", showcalc);
-	fprintf(fp, "showscientific=%d\n", showscientific);
-	fprintf(fp, "[View]\n");
-	fprintf(fp, "order=%s\n", corder);
-	fprintf(fp, "iconsize=%d\n", iconsize);
-	fprintf(fp, "useiconview=%d\n", useiconview);
-	fprintf(fp, "showda=%d\n", showda);
-	fprintf(fp, "entryonbottom=%d\n", entryonbottom);
-	fprintf(fp, "[Window]\n");
-	fprintf(fp, "usecsd=%d\n", usecsd);
-	fprintf(fp, "hidetitle=%d\n", hidetitle);
-	fprintf(fp, "exitwhenunfocused=%d\n", exitwhenunfocused);
+	g_key_file_unref(config);
 
-	fclose(fp);
 	restarting = 1;
 	exit_window();
 }
@@ -154,6 +142,10 @@ void readconf(void)
 
 		if (g_key_file_has_key(key_file, "Elements", "showcmd", NULL))
 			showcmd = g_key_file_get_integer(key_file, "Elements", "showcmd", NULL);
+
+		if (g_key_file_has_key(key_file, "Elements", "closeterm", NULL))
+			closeterm = g_key_file_get_integer(key_file, "Elements", "closeterm", NULL);
+			ccloseterm = closeterm ? "": ";read" ;
 
 		if (g_key_file_has_key(key_file, "Elements", "showweb", NULL))
 			showweb = g_key_file_get_integer(key_file, "Elements", "showweb", NULL);

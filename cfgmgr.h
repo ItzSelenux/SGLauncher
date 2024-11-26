@@ -57,6 +57,8 @@ void showcfg(void)
 			webctm = gtk_entry_new();
 		wshowcmd = gtk_check_button_new_with_label("Show \"Run in Terminal\" entry");
 			gtk_widget_set_direction(wshowcmd, GTK_TEXT_DIR_RTL);
+		wcloseterm = gtk_check_button_new_with_label("Close terminal when process finishes");
+			gtk_widget_set_direction(wcloseterm, GTK_TEXT_DIR_RTL);
 		wshowweb = gtk_check_button_new_with_label("Show \"Search on Web\" entry");
 			gtk_widget_set_direction(wshowweb, GTK_TEXT_DIR_RTL);
 		wshowcalc = gtk_check_button_new_with_label("Show Math answer when numbers are typed");
@@ -98,9 +100,10 @@ void showcfg(void)
 			gtk_grid_attach(GTK_GRID(tab1), webctm, 1, 1, 1, 1);
 
 		gtk_grid_attach(GTK_GRID(tab1), wshowcmd, 0, 2, 2, 1);
-		gtk_grid_attach(GTK_GRID(tab1), wshowweb, 0, 3, 2, 1);
-		gtk_grid_attach(GTK_GRID(tab1), wshowcalc, 0, 4, 2, 1);
-		gtk_grid_attach(GTK_GRID(tab1), wshowscientific, 0, 5, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab1), wcloseterm, 0, 3, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab1), wshowweb, 0, 4, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab1), wshowcalc, 0, 5, 2, 1);
+		gtk_grid_attach(GTK_GRID(tab1), wshowscientific, 0, 6, 2, 1);
 
 	GtkWidget *tab2 = gtk_grid_new();
 	gtk_grid_set_column_homogeneous(GTK_GRID(tab2), TRUE);
@@ -133,6 +136,7 @@ void showcfg(void)
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wuseiconview), useiconview);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wentryonbottom), entryonbottom);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowcmd), showcmd);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wcloseterm), closeterm);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowweb), showweb);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowcalc), showcalc);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wshowscientific), showscientific);

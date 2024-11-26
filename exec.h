@@ -6,8 +6,7 @@ void run_command(GtkWidget *widget, gpointer data)
 		gchar *percentPos = strchr(input, '%');
 		if (percentPos != NULL)
 		{
-			int length = percentPos - input;
-			input[length] = '\0';
+			memmove(percentPos, percentPos + 2, strlen(percentPos + 2) + 1);
 		}
 
 		GError *error = NULL;
@@ -99,12 +98,6 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *input)
 		program_path = g_find_program_in_path(binary_name);
 		if (program_path == NULL) 
 		{
-			dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-				"The command '%s' was not found in your PATH. Please check the command and try again.", binary_name);
-			gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-			gtk_dialog_run(GTK_DIALOG(dialog));
-			gtk_widget_destroy(dialog);
-			g_free(binary_name);
 			return;
 		}
 
