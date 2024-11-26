@@ -170,7 +170,7 @@ void load_apps(GtkTreeView *treeview)
 				{
 					if (g_str_has_prefix(groups[j], "Desktop Action"))
 					{
-						gchar *action_name = g_key_file_get_string(key_file, groups[j], "Name", NULL);
+						gchar *action_name = g_key_file_get_locale_string(key_file, groups[j], "Name", NULL, NULL);
 						gchar *exec_value = g_key_file_get_string(key_file, groups[j], "Exec", NULL);
 
 						if (action_name && exec_value)

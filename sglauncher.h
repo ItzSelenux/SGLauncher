@@ -5,6 +5,12 @@
 #include <dirent.h>
 #include <math.h>
 #include <ctype.h>
+#include <libintl.h>
+#include <locale.h>
+
+#define _(String) gettext(String)
+#define GETTEXT_PACKAGE "sglauncher"
+#define localedir "/usr/share/locale"
 #define ML 256
 
 const gchar *cweb, *cwebng, *corder, *active_text, *home_dir, *config_file_path, *terminal,

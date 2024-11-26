@@ -1,0 +1,102 @@
+# Spanish translations for PACKAGE package.
+# Copyright (C) 2024 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# ItzSelenux <itszariep@pc>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-11-26 10:12-0600\n"
+"PO-Revision-Date: 2024-11-26 10:14-0600\n"
+"Last-Translator: ItzSelenux <itszariep@pc>\n"
+"Language-Team: Spanish <es@tp.org.es>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: cfgmgr.h:56
+msgid "Custom Search Engine:"
+msgstr "Motor de búsqueda personalizado"
+
+#: cfgmgr.h:58
+msgid "Show \"Run in Terminal\" entry"
+msgstr "Mostrar la entrada \"Correr en un terminal\""
+
+#: cfgmgr.h:60
+msgid "Close terminal when process finishes"
+msgstr "Cerrar terminal cuando el proceso finalice"
+
+#: cfgmgr.h:62
+msgid "Show \"Search on Web\" entry"
+msgstr "Mostrar la entrada \"Buscar en internet\""
+
+#: cfgmgr.h:64
+msgid "Show Math answer when numbers are typed"
+msgstr "Mostrar respuestas matemáticas cuando un numero está escrito"
+
+#: cfgmgr.h:66
+msgid "Use scientific notation on math answers"
+msgstr "Usar notación científica para las respuestas matemáticas"
+
+#: cfgmgr.h:74
+msgid "Show Desktop actions"
+msgstr "Mostrar acciones de las aplicación"
+
+#: cfgmgr.h:76
+msgid "Search entry on bottom"
+msgstr "Barra de búsqueda abajo"
+
+#: cfgmgr.h:78
+msgid "Use icon view"
+msgstr "Usar vista de iconos"
+
+#: cfgmgr.h:83
+msgid "Use CSD Decoration"
+msgstr "Usar decoración CSD"
+
+#: cfgmgr.h:85
+msgid "Hide CSD Title"
+msgstr "Esconder titulo CSD"
+
+#: cfgmgr.h:87
+msgid "Exit when unfocused"
+msgstr "Cerrar cuando pierde el foco"
+
+#: cfgmgr.h:90
+msgid "Default"
+msgstr "Por defecto"
+
+#: cfgmgr.h:91
+msgid "Apply"
+msgstr "Aplicar"
+
+#: cfgmgr.h:95
+msgid "Elements"
+msgstr "Elementos"
+
+#: cfgmgr.h:96
+msgid "Search Engine:"
+msgstr "Motor de busqueda"
+
+#: cfgmgr.h:110
+msgid "View"
+msgstr "Vista"
+
+#: cfgmgr.h:111
+msgid "Item order:"
+msgstr "Orden de elementos"
+
+#: cfgmgr.h:113
+msgid "Icon Size"
+msgstr "Tamaño de iconos"
+
+#: cfgmgr.h:121
+msgid "Window"
+msgstr "Ventana"
+
+#: mainwindow.h:28
+msgid "Project Website"
+msgstr "Sitio web del proyecto"

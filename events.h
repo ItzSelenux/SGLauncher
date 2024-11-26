@@ -76,13 +76,12 @@ static gboolean applist_show_menu(GtkWidget *widget, GdkEventButton *event, gpoi
 			{
 				gtk_tree_model_get(model, &iter, 4, &app_comment, 1, &toexec, 5, &app_path, -1);
 				cmdexec = g_strdup_printf("%s -e /bin/sh -c \"%s %s\"", terminal, toexec, ccloseterm);
-				g_print("%s\n", cmdexec);
 				fmexec = g_strdup_printf("xdg-open %s", app_path);
 
 				GtkWidget *menu = gtk_menu_new(),
-				*menu_item_run = gtk_menu_item_new_with_label("Run"),
-				*menu_item_runt = gtk_menu_item_new_with_label("Run in terminal"),
-				*menu_item_showfm = gtk_menu_item_new_with_label("Show entry in file manager"),
+				*menu_item_run = gtk_menu_item_new_with_label(_("Run")),
+				*menu_item_runt = gtk_menu_item_new_with_label(_("Run in terminal")),
+				*menu_item_showfm = gtk_menu_item_new_with_label(_("Show entry in file manager")),
 				*menu_item_comment = gtk_menu_item_new_with_label(app_comment);
 
 				gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item_comment);

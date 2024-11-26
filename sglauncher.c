@@ -1,6 +1,10 @@
 #include "sglauncher.h"
 int main(int argc, char *argv[]) 
 {
+	setlocale(LC_ALL, "");
+	bindtextdomain(GETTEXT_PACKAGE, localedir);
+	textdomain(GETTEXT_PACKAGE);
+
 	gchar* env_sgcsd = getenv("SGCSD");
 	terminal = getenv("TERMINAL");
 	home_dir = g_get_home_dir();

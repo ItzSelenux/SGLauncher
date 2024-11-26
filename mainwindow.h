@@ -25,7 +25,7 @@ void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata)
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2024 ItsZariep");
 	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Simple GTK Launcher");
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://codeberg.org/ItsZariep/SGLauncher");
-	gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
+	gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), _("Project Website"));
 	gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_GPL_3_0);
 	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),program_icon);
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -37,10 +37,10 @@ void on_submenu_item_onlinehelp_selected(GtkMenuItem *menuitem, gpointer userdat
 {
 	const gchar *link = "https://codeberg.org/ItsZariep/SGLauncher/wiki/?action=_pages";
 
-	dialog = gtk_dialog_new_with_buttons("Documentation available on Codeberg", NULL, GTK_DIALOG_MODAL, NULL, NULL);
+	dialog = gtk_dialog_new_with_buttons(_("Documentation available on Codeberg"), NULL, GTK_DIALOG_MODAL, NULL, NULL);
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	GtkWidget *info_image = gtk_image_new_from_icon_name("dialog-information", GTK_ICON_SIZE_DIALOG);
-	GtkWidget *label = gtk_label_new("Documentation available at:");
+	GtkWidget *label = gtk_label_new(_("Documentation available at:"));
 
 	gchar *markup = g_strdup_printf("<a href=\"%s\">%s</a>", link, link);
 	GtkWidget *link_label = gtk_label_new(NULL);
@@ -101,14 +101,14 @@ void create_window(void)
 
 	if (!nohome)
 	{
-		submenu_item_settings = gtk_menu_item_new_with_label("Settings");
+		submenu_item_settings = gtk_menu_item_new_with_label(_("Settings"));
 		gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item_settings);
 	}
 
-	submenu_item_help = gtk_menu_item_new_with_label("Help");
+	submenu_item_help = gtk_menu_item_new_with_label(_("Help"));
 	submenu_menu_help = gtk_menu_new();
-		submenu_item_onlinehelp = gtk_menu_item_new_with_label("Online help");
-		submenu_item_about = gtk_menu_item_new_with_label("About");
+		submenu_item_onlinehelp = gtk_menu_item_new_with_label(_("Online help"));
+		submenu_item_about = gtk_menu_item_new_with_label(_("About"));
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu_menu_help), submenu_item_quickhelp);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu_menu_help), submenu_item_onlinehelp);
@@ -167,7 +167,7 @@ void create_window(void)
 	GtkWidget *cmdicon = gtk_image_new_from_icon_name("terminal-tango", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(cmd_box), cmdicon, FALSE, FALSE, 0);
 
-	GtkWidget *cmdrun = gtk_label_new("Run in Terminal");
+	GtkWidget *cmdrun = gtk_label_new(_("Run in Terminal"));
 	gtk_box_pack_start(GTK_BOX(cmd_box), cmdrun, FALSE, FALSE, 0);
 
 	web_row = gtk_list_box_row_new();
@@ -177,7 +177,7 @@ void create_window(void)
 	GtkWidget *webicon = gtk_image_new_from_icon_name("edit-find", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(web_box), webicon, FALSE, FALSE, 0);
 
-	GtkWidget *webrun = gtk_label_new("Search on Web");
+	GtkWidget *webrun = gtk_label_new(_("Search on Web"));
 	gtk_box_pack_start(GTK_BOX(web_box), webrun, FALSE, FALSE, 0);
 	
 	if (showcmd == 1)
