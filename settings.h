@@ -36,30 +36,39 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		}
 
 		g_key_file_set_string(config, "Elements", "cengine", "https://search.disroot.org/search?q");
-		g_key_file_set_string(config, "Elements", "wengine", "1");
-		g_key_file_set_integer(config, "Elements", "showcmd", 1);
-		g_key_file_set_integer(config, "Elements", "showweb", 1);
+		g_key_file_set_string(config, "Elements", "wengine", 0);
+		g_key_file_set_integer(config, "Elements", "showcmd", 0);
+		g_key_file_set_integer(config, "Elements", "showweb", 0);
 		g_key_file_set_integer(config, "Elements", "showcalc", 1);
-		g_key_file_set_integer(config, "Elements", "showscientific", 1);
-		g_key_file_set_integer(config, "Elements", "closeterm", 0);
-		g_key_file_set_integer(config, "Elements", "showda", 1);
-		g_key_file_set_string(config, "View", "order", "0");
 		g_key_file_set_integer(config, "View", "iconsize", 16);
+		g_key_file_set_integer(config, "View", "useiconview", 0);
+		g_key_file_set_integer(config, "View", "showda", 1);
+		g_key_file_set_string(config, "View", "order", 0);
+		g_key_file_set_integer(config, "Behavior", "closeterm", 0);
+		g_key_file_set_integer(config, "Behavior", "showscientific", 1);
+		g_key_file_set_integer(config, "Behavior", "ignorenodisplay", 1);
+		g_key_file_set_integer(config, "Behavior", "ignoreterminal", 0);
+		g_key_file_set_integer(config, "Window", "usecsd", 1);
+		g_key_file_set_integer(config, "Window", "hidetitle", 0);
+		g_key_file_set_integer(config, "Window", "hidewindeco", 0);
 		g_key_file_set_integer(config, "Window", "exitwhenunfocused", 0);
 	} 
 	else 
 	{
 		showcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
-		closeterm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wcloseterm));
 		showweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
 		showcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
-		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
 		showda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
 		useiconview = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wuseiconview));
 		entryonbottom = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wentryonbottom));
+		closeterm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wcloseterm));
+		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
+		ignorenodisplay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignorenodisplay));
+		ignoreterminal = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignoreterminal));
 		exitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
 		usecsd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wusecsd));
 		hidetitle = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(whidetitle));
+		hidewindeco = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(whidewindeco));
 		iconsize = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(wiconsize));
 		ncengine = (entry_text && strlen(entry_text) > 0) ? entry_text : placeholder_text;
 
@@ -84,15 +93,19 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		g_key_file_set_string(config, "Elements", "cengine", ncengine);
 		g_key_file_set_string(config, "Elements", "wengine", cweb);
 		g_key_file_set_integer(config, "Elements", "showcmd", showcmd);
-		g_key_file_set_integer(config, "Elements", "closeterm", closeterm);
 		g_key_file_set_integer(config, "Elements", "showweb", showweb);
 		g_key_file_set_integer(config, "Elements", "showcalc", showcalc);
-		g_key_file_set_integer(config, "Elements", "showscientific", showscientific);
 		g_key_file_set_integer(config, "View", "iconsize", iconsize);
+		g_key_file_set_integer(config, "View", "useiconview", useiconview);
 		g_key_file_set_integer(config, "View", "showda", showda);
 		g_key_file_set_string(config, "View", "order", corder);
+		g_key_file_set_integer(config, "Behavior", "closeterm", closeterm);
+		g_key_file_set_integer(config, "Behavior", "showscientific", showscientific);
+		g_key_file_set_integer(config, "Behavior", "ignorenodisplay", ignorenodisplay);
+		g_key_file_set_integer(config, "Behavior", "ignoreterminal", ignoreterminal);
 		g_key_file_set_integer(config, "Window", "usecsd", usecsd);
 		g_key_file_set_integer(config, "Window", "hidetitle", hidetitle);
+		g_key_file_set_integer(config, "Window", "hidewindeco", hidewindeco);
 		g_key_file_set_integer(config, "Window", "exitwhenunfocused", exitwhenunfocused);
 	}
 
@@ -143,18 +156,11 @@ void readconf(void)
 		if (g_key_file_has_key(key_file, "Elements", "showcmd", NULL))
 			showcmd = g_key_file_get_integer(key_file, "Elements", "showcmd", NULL);
 
-		if (g_key_file_has_key(key_file, "Elements", "closeterm", NULL))
-			closeterm = g_key_file_get_integer(key_file, "Elements", "closeterm", NULL);
-			ccloseterm = closeterm ? "": ";read" ;
-
 		if (g_key_file_has_key(key_file, "Elements", "showweb", NULL))
 			showweb = g_key_file_get_integer(key_file, "Elements", "showweb", NULL);
 
 		if (g_key_file_has_key(key_file, "Elements", "showcalc", NULL))
 			showcalc = g_key_file_get_integer(key_file, "Elements", "showcalc", NULL);
-
-		if (g_key_file_has_key(key_file, "Elements", "showscientific", NULL))
-			showscientific = g_key_file_get_integer(key_file, "Elements", "showscientific", NULL);
 
 
 		if (g_key_file_has_key(key_file, "View", "order", NULL))
@@ -168,6 +174,20 @@ void readconf(void)
 		if (g_key_file_has_key(key_file, "View", "entryonbottom", NULL))
 			entryonbottom = g_key_file_get_integer(key_file, "View", "entryonbottom", NULL);
 
+		if (g_key_file_has_key(key_file, "Behavior", "closeterm", NULL))
+			closeterm = g_key_file_get_integer(key_file, "Behavior", "closeterm", NULL);
+			ccloseterm = closeterm ? "": ";read" ;
+
+		if (g_key_file_has_key(key_file, "Behavior", "showscientific", NULL))
+			showscientific = g_key_file_get_integer(key_file, "Behavior", "showscientific", NULL);
+
+		if (g_key_file_has_key(key_file, "Behavior", "ignorenodisplay", NULL))
+			ignorenodisplay = g_key_file_get_integer(key_file, "Behavior", "ignorenodisplay", NULL);
+
+		if (g_key_file_has_key(key_file, "Behavior", "ignoreterminal", NULL))
+			ignoreterminal = g_key_file_get_integer(key_file, "Behavior", "ignoreterminal", NULL);
+
+
 		if (g_key_file_has_key(key_file, "Window", "usecsd", NULL))
 		{
 			usecsd = g_key_file_get_integer(key_file, "Window", "usecsd", NULL);
@@ -179,6 +199,8 @@ void readconf(void)
 
 		if (g_key_file_has_key(key_file, "Window", "hidetitle", NULL))
 			hidetitle = g_key_file_get_integer(key_file, "Window", "hidetitle", NULL);
+		if (g_key_file_has_key(key_file, "Window", "hidewindeco", NULL))
+			hidewindeco = g_key_file_get_integer(key_file, "Window", "hidewindeco", NULL);
 
 		if (g_key_file_has_key(key_file, "Window", "exitwhenunfocused", NULL))
 			exitwhenunfocused = g_key_file_get_integer(key_file, "Window", "exitwhenunfocused", NULL);

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 10:37-0600\n"
+"POT-Creation-Date: 2024-11-26 17:23-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,74 +26,90 @@ msgid "Show \"Run in Terminal\" entry"
 msgstr ""
 
 #: cfgmgr.h:60
-msgid "Close terminal when process finishes"
-msgstr ""
-
-#: cfgmgr.h:62
 msgid "Show \"Search on Web\" entry"
 msgstr ""
 
-#: cfgmgr.h:64
+#: cfgmgr.h:62
 msgid "Show Math answer when numbers are typed"
 msgstr ""
 
-#: cfgmgr.h:66
-msgid "Use scientific notation on math answers"
-msgstr ""
-
-#: cfgmgr.h:74
+#: cfgmgr.h:70
 msgid "Show Desktop actions"
 msgstr ""
 
-#: cfgmgr.h:76
+#: cfgmgr.h:72
 msgid "Search entry on bottom"
 msgstr ""
 
-#: cfgmgr.h:78
+#: cfgmgr.h:74
 msgid "Use icon view"
 msgstr ""
 
-#: cfgmgr.h:83
+#: cfgmgr.h:80
+msgid "Close terminal when process finishes"
+msgstr ""
+
+#: cfgmgr.h:82
+msgid "Use scientific notation on math answers"
+msgstr ""
+
+#: cfgmgr.h:84
+msgid "Ignore \"NoDisplay\" apps"
+msgstr ""
+
+#: cfgmgr.h:86
+msgid "Ignore Terminal apps"
+msgstr ""
+
+#: cfgmgr.h:89
 msgid "Use CSD Decoration"
 msgstr ""
 
-#: cfgmgr.h:85
+#: cfgmgr.h:91
 msgid "Hide CSD Title"
 msgstr ""
 
-#: cfgmgr.h:87
-msgid "Exit when unfocused"
-msgstr ""
-
-#: cfgmgr.h:90
-msgid "Default"
-msgstr ""
-
-#: cfgmgr.h:91
-msgid "Apply"
+#: cfgmgr.h:93
+msgid "Disable WM Decoration"
 msgstr ""
 
 #: cfgmgr.h:95
+msgid "Exit when unfocused"
+msgstr ""
+
+#: cfgmgr.h:98
+msgid "Default"
+msgstr ""
+
+#: cfgmgr.h:99
+msgid "Apply"
+msgstr ""
+
+#: cfgmgr.h:103
 msgid "Elements"
 msgstr ""
 
-#: cfgmgr.h:96
+#: cfgmgr.h:104
 msgid "Search Engine:"
 msgstr ""
 
-#: cfgmgr.h:110
+#: cfgmgr.h:115
 msgid "View"
 msgstr ""
 
-#: cfgmgr.h:111
+#: cfgmgr.h:116
 msgid "Item order:"
 msgstr ""
 
-#: cfgmgr.h:113
+#: cfgmgr.h:118
 msgid "Icon Size"
 msgstr ""
 
-#: cfgmgr.h:121
+#: cfgmgr.h:126
+msgid "Behavior"
+msgstr ""
+
+#: cfgmgr.h:134
 msgid "Window"
 msgstr ""
 
@@ -135,4 +151,12 @@ msgstr ""
 
 #: mainwindow.h:111
 msgid "About"
+msgstr ""
+
+#: mainwindow.h:178
+msgid "Run in Terminal"
+msgstr ""
+
+#: mainwindow.h:188
+msgid "Search on Web"
 msgstr ""

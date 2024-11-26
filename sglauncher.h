@@ -19,7 +19,8 @@ gchar *pm, *webengine, *cwengine, cengine[ML], *program_icon, *ccloseterm;
 
 guint wengine, order=0, showweb=1, showcmd=1, showcalc=1, showda=1, useiconview=0,
 	showscientific=1, exitwhenunfocused=0, sgcfg, nocsd=0, hidetitle=0, entryonbottom=0,
-	callconfig=0, nohome=0, restarting=0, ismoving=0, usecsd=1, fcsd=0, iconsize=16, closeterm=1;
+	callconfig=0, nohome=0, restarting=0, ismoving=0, usecsd=1, fcsd=0, iconsize=16, closeterm=1,
+	ignorenodisplay=1, ignoreterminal=0, hidewindeco=0;
 
 GtkWidget *window, *grid, *button, *cmd_row, *dialog, *web_row, *entry, *manswer, *mathtext,
 *listbox2, *pr, *row, *headerbar, *button, *image, *wtitle, *submenu, *submenu_item_settings,
@@ -27,7 +28,7 @@ GtkWidget *window, *grid, *button, *cmd_row, *dialog, *web_row, *entry, *manswer
 *webctm, *worder, *wshowcmd, *wshowweb, *wshowcalc, *wshowscientific, *wexitwhenunfocused, *defbtn,
 *applybtn, *applist, *web_box, *wshowda, *wusecsd, *whidetitle ,*scrolled_window, *math, *iconview,
 *submenu_item_onlinehelp, *submenu_menu_help, *submenu_item_help, *wentryonbottom, *wiconsize,
-*wuseiconview, *wcloseterm;
+*wuseiconview, *wcloseterm, *wignorenodisplay, *wignoreterminal, *whidewindeco;
 
 GPtrArray *program_icon_names;
 GtkIconTheme *theme;

@@ -140,6 +140,14 @@ void create_window(void)
 			gtk_widget_set_hexpand(box, TRUE);
 		}
 	}
+	else
+	{
+		if (hidewindeco)
+		{
+			gtk_window_set_decorated(GTK_WINDOW(window), hidewindeco);
+			gtk_container_set_border_width(GTK_CONTAINER(window), 5);
+		}
+	}
 
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_widget_hide(gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(scrolled_window)));

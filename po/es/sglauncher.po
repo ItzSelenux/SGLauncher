@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 10:37-0600\n"
+"POT-Creation-Date: 2024-11-26 17:23-0600\n"
 "PO-Revision-Date: 2024-11-26 10:14-0600\n"
 "Last-Translator: ItsZariep <itszariep@pc>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -26,74 +26,91 @@ msgid "Show \"Run in Terminal\" entry"
 msgstr "Mostrar la entrada \"Correr en un terminal\""
 
 #: cfgmgr.h:60
-msgid "Close terminal when process finishes"
-msgstr "Cerrar terminal cuando el proceso finalice"
-
-#: cfgmgr.h:62
 msgid "Show \"Search on Web\" entry"
 msgstr "Mostrar la entrada \"Buscar en internet\""
 
-#: cfgmgr.h:64
+#: cfgmgr.h:62
 msgid "Show Math answer when numbers are typed"
 msgstr "Mostrar respuestas matemáticas cuando un numero está escrito"
 
-#: cfgmgr.h:66
-msgid "Use scientific notation on math answers"
-msgstr "Usar notación científica para las respuestas matemáticas"
-
-#: cfgmgr.h:74
+#: cfgmgr.h:70
 msgid "Show Desktop actions"
 msgstr "Mostrar acciones de las aplicación"
 
-#: cfgmgr.h:76
+#: cfgmgr.h:72
 msgid "Search entry on bottom"
 msgstr "Barra de búsqueda abajo"
 
-#: cfgmgr.h:78
+#: cfgmgr.h:74
 msgid "Use icon view"
 msgstr "Usar vista de iconos"
 
-#: cfgmgr.h:83
+#: cfgmgr.h:80
+msgid "Close terminal when process finishes"
+msgstr "Cerrar terminal cuando el proceso finalice"
+
+#: cfgmgr.h:82
+msgid "Use scientific notation on math answers"
+msgstr "Usar notación científica para las respuestas matemáticas"
+
+#: cfgmgr.h:84
+msgid "Ignore \"NoDisplay\" apps"
+msgstr "Ignorar aplicaciones ocultas"
+
+#: cfgmgr.h:86
+msgid "Ignore Terminal apps"
+msgstr "Ignorar aplicaciones en terminal"
+
+#: cfgmgr.h:89
 msgid "Use CSD Decoration"
 msgstr "Usar decoración CSD"
 
-#: cfgmgr.h:85
+#: cfgmgr.h:91
 msgid "Hide CSD Title"
 msgstr "Esconder titulo CSD"
 
-#: cfgmgr.h:87
+#: cfgmgr.h:93
+#, fuzzy
+msgid "Disable WM Decoration"
+msgstr "Usar decoración CSD"
+
+#: cfgmgr.h:95
 msgid "Exit when unfocused"
 msgstr "Cerrar cuando pierde el foco"
 
-#: cfgmgr.h:90
+#: cfgmgr.h:98
 msgid "Default"
 msgstr "Por defecto"
 
-#: cfgmgr.h:91
+#: cfgmgr.h:99
 msgid "Apply"
 msgstr "Aplicar"
 
-#: cfgmgr.h:95
+#: cfgmgr.h:103
 msgid "Elements"
 msgstr "Elementos"
 
-#: cfgmgr.h:96
+#: cfgmgr.h:104
 msgid "Search Engine:"
 msgstr "Motor de busqueda"
 
-#: cfgmgr.h:110
+#: cfgmgr.h:115
 msgid "View"
 msgstr "Vista"
 
-#: cfgmgr.h:111
+#: cfgmgr.h:116
 msgid "Item order:"
 msgstr "Orden de elementos"
 
-#: cfgmgr.h:113
+#: cfgmgr.h:118
 msgid "Icon Size"
 msgstr "Tamaño de iconos"
 
-#: cfgmgr.h:121
+#: cfgmgr.h:126
+msgid "Behavior"
+msgstr "Comportamiento"
+
+#: cfgmgr.h:134
 msgid "Window"
 msgstr "Ventana"
 
@@ -137,3 +154,13 @@ msgstr "Ayuda en linea"
 #: mainwindow.h:111
 msgid "About"
 msgstr "Acerca de"
+
+#: mainwindow.h:178
+#, fuzzy
+msgid "Run in Terminal"
+msgstr "Mostrar la entrada \"Correr en un terminal\""
+
+#: mainwindow.h:188
+#, fuzzy
+msgid "Search on Web"
+msgstr "Mostrar la entrada \"Buscar en internet\""

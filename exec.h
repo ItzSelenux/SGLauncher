@@ -8,7 +8,6 @@ void run_command(GtkWidget *widget, gpointer data)
 		{
 			memmove(percentPos, percentPos + 2, strlen(percentPos + 2) + 1);
 		}
-
 		GError *error = NULL;
 		GPid pid;
 		gboolean success = g_spawn_async_with_pipes(NULL,
@@ -28,7 +27,7 @@ void run_command(GtkWidget *widget, gpointer data)
 	}
 	else
 	{
-		g_print("No command to execute.\n");
+		g_warning("No command to execute.\n");
 	}
 }
 
@@ -60,7 +59,7 @@ void on_item_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColu
 	}
 	else
 	{
-		g_print("Failed to get iterator for path.\n");
+		g_warning("Failed to get iterator for path.\n");
 	}
 }
 

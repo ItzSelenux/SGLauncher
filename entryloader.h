@@ -115,18 +115,34 @@ void load_apps(GtkTreeView *treeview)
 				continue;
 			}
 
-			if (g_key_file_get_boolean(key_file, "Desktop Entry", "NoDisplay", NULL))
+			if (g_key_file_get_boolean(key_file, "Desktop Entry", "NoDisplay", NULL) && ignorenodisplay)
 			{
 				g_free(path);
 				g_key_file_free(key_file);
 				continue;
 			}
 
+
+
 			gchar *app_name = g_key_file_get_locale_string(key_file, "Desktop Entry", "Name", NULL, NULL);
 			gchar *app_comment = g_key_file_get_locale_string(key_file, "Desktop Entry", "Comment", NULL, NULL);
 			gchar *icon_name = g_key_file_get_string(key_file, "Desktop Entry", "Icon", NULL);
 			gchar *toexec = g_key_file_get_string(key_file, "Desktop Entry", "Exec", NULL);
 			GdkPixbuf *icon_pixbuf = NULL;
+
+			if (g_key_file_get_boolean(key_file, "Desktop Entry", "Terminal", NULL))
+			{
+				if (ignoreterminal)
+				{
+					g_free(path);
+					g_key_file_free(key_file);
+					continue;
+				}
+				else
+				{
+					toexec = g_strdup_printf("%s -e %s", terminal, toexec);
+				}
+			}
 
 			if (g_path_is_absolute(icon_name) && g_file_test(icon_name, G_FILE_TEST_EXISTS))
 			{
