@@ -16,18 +16,6 @@ void exit_window(void)
 	}
 }
 
-void on_submenu_item_quickhelp_selected(GtkMenuItem *menuitem, gpointer userdata) 
-{
-	dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_window_set_title(GTK_WINDOW(dialog), "Help");
-		window_set_icon(GTK_WINDOW(window), program_icon);
-		gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
-		GtkWidget *label = gtk_label_new(" - SGLauncher is a quick launcher that can run programs, desktop actions, run on terminal or search on web\n - You can run the first item on the list by pressing enter, or press down to select other item \n - If the first element has a desktop action and the name match with the search box text, the desktop action will be executed \n - You can press CTRL+T to run on terminal and CTRL+B to Search on Web\n - You can customize the program in the Settings or editing the config file on ~/.config/sglauncher.conf");
-	gtk_container_add(GTK_CONTAINER(dialog), label);
-	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-	gtk_widget_show_all(dialog);
-}
-
 void on_submenu_item_about_selected(GtkMenuItem *menuitem, gpointer userdata)
 {
 	dialog = gtk_about_dialog_new();
@@ -119,7 +107,6 @@ void create_window(void)
 
 	submenu_item_help = gtk_menu_item_new_with_label("Help");
 	submenu_menu_help = gtk_menu_new();
-		submenu_item_quickhelp = gtk_menu_item_new_with_label("Quick help");
 		submenu_item_onlinehelp = gtk_menu_item_new_with_label("Online help");
 		submenu_item_about = gtk_menu_item_new_with_label("About");
 
@@ -206,14 +193,11 @@ void create_window(void)
 
 	g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), NULL);
 	g_signal_connect(submenu_item_settings, "activate", G_CALLBACK(showcfg), NULL);
-	g_signal_connect(submenu_item_quickhelp, "activate", G_CALLBACK(on_submenu_item_quickhelp_selected), NULL);
 	g_signal_connect(submenu_item_about, "activate", G_CALLBACK(on_submenu_item_about_selected), NULL);
 	g_signal_connect(submenu_item_onlinehelp, "activate", G_CALLBACK(on_submenu_item_onlinehelp_selected), NULL);
 	g_signal_connect(listbox2, "row-activated", G_CALLBACK(on_run_command), entry);
 	g_signal_connect(applist, "row-activated", G_CALLBACK(on_item_activated), NULL);
 	g_signal_connect(iconview, "item-activated", G_CALLBACK(on_item_activated), NULL);
-	//if (useiconview)
-		//g_signal_connect(window, "check-resize", G_CALLBACK(adjust_iconview), NULL);
 
 	g_signal_connect(window, "button-press-event", G_CALLBACK(on_button_press), submenu);
 
@@ -306,6 +290,8 @@ void create_window(void)
 			filter_data.entry = GTK_ENTRY(entry);
 
 		g_signal_connect(entry, "changed", G_CALLBACK(on_entry_changed), &filter_data);
+		g_signal_connect(applist, "button-press-event", G_CALLBACK(applist_show_menu), NULL);
+		g_signal_connect(iconview, "button-press-event", G_CALLBACK(applist_show_menu), NULL);
 		gtk_widget_show_all(window);
 		gtk_widget_hide(mathtext);
 		gtk_widget_hide(listbox2);

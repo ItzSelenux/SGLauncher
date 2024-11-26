@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=SGLauncher Settings
+Name[es]=Ajustes de SGLauncher
 Comment=Configure SGLauncher
+Comment[es]=Configurar SGLauncher
 Exec=sglauncher --cfg
 Icon=menulibre
 Terminal=false

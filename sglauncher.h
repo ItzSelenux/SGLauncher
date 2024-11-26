@@ -7,7 +7,8 @@
 #include <ctype.h>
 #define ML 256
 
-const gchar *cweb, *cwebng, *corder, *active_text, *home_dir, *config_file_path, *quick_dirs[] = {NULL};
+const gchar *cweb, *cwebng, *corder, *active_text, *home_dir, *config_file_path, *terminal,
+*quick_dirs[] = {NULL};
 gchar *pm, *webengine, *cwengine, cengine[ML], *program_icon;
 
 guint wengine, order=0, showweb=1, showcmd=1, showcalc=1, showda=1, useiconview=0,
@@ -40,11 +41,11 @@ GOptionEntry entries[] =
 	{ NULL }
 };
 
-#include "events.h"
 #include "settings.h"
 #include "calc.h"
 #include "exec.h"
 #include "entryloader.h"
 #include "keyhandler.h"
+#include "events.h"
 #include "cfgmgr.h"
 #include "mainwindow.h"

@@ -63,11 +63,9 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		else 
 			ncengine = placeholder_text;
 
-		g_print("%s", ncengine);
 		cweb = NULL;
 		cwebng = gtk_entry_get_text(GTK_ENTRY(webctm));
 		iconsize = gtk_spin_button_get_value(GTK_SPIN_BUTTON(wiconsize));
-		g_print("%d", iconsize);
 		corder = NULL;
 
 		if (activetext) 
@@ -214,7 +212,7 @@ void readconf(void)
 			webengine = "https://duckduckgo.com/?q";
 			break;
 	}
-	g_print("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\nExitWhenUnfocused: %d\nUseCSD: %d\nHideTitle: %d\nIcon Size: %d\n",
+	g_info("WebEngine: %s\nOrder: %d\nShowDA: %d\nShowCMD: %d\nShowWeb: %d\nShowCalc: %d\nShowScientific: %d\nExitWhenUnfocused: %d\nUseCSD: %d\nHideTitle: %d\nIcon Size: %d\n",
 		webengine, order, showda, showcmd, showweb, showcalc, showscientific, exitwhenunfocused,
 		usecsd, hidetitle, iconsize);
 }

@@ -110,40 +110,10 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 		gtk_main_quit();
 		return TRUE;
 	}
-	else if (event->keyval == GDK_KEY_Escape || (event->keyval == GDK_KEY_m && (event->state & GDK_CONTROL_MASK))) 
+	else if (event->keyval == GDK_KEY_Escape || ((event->state & GDK_CONTROL_MASK) && 
+		(event->keyval == GDK_KEY_m || event->keyval == GDK_KEY_t)))
 	{
-		if (strlen(text) > 0 && !isdigit(text[0])) 
-		{
-			GError *error = NULL;
-			GPid pid;
-			//gint exit_status = 0;
-			gboolean success = g_spawn_async_with_pipes(NULL,
-				(gchar * []) {(gchar *) text, NULL},
-				NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, NULL, NULL, NULL, &error);
-			if (!success)
-			{
-				g_warning("Failed to start program: %s", error->message);
-				gchar **args = g_strsplit(text, " ", -1);
-
-				error = NULL;
-				success = g_spawn_async(NULL, args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
-				if (!success) 
-				{
-					g_warning("Failed to launch process: %s", error->message);
-					g_error_free(error);
-				}
-				else
-				{
-					g_spawn_close_pid(pid);
-					gtk_main_quit();
-				}
-			}
-			else if (success)
-			{
-				gtk_main_quit();
-				g_spawn_close_pid(pid);
-			}
-		}
+		gtk_widget_activate(cmd_row);
 	}
 
 	else if (event->keyval == GDK_KEY_Return && gtk_widget_has_focus(entry))
@@ -205,10 +175,6 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
 	{
 		gtk_widget_activate(web_row);
 	}
-	else if((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_t))
-	{
-		gtk_widget_activate(cmd_row);
-	}
 	return FALSE;
 }
 
@@ -242,7 +208,7 @@ gboolean close_window_if_unfocused(gpointer widget)
 
 	gdk_device_get_state(pointer, gtk_widget_get_window(GTK_WIDGET(widget)), NULL, &button_state);
 
-	if (!gtk_window_has_toplevel_focus(GTK_WINDOW(widget)) && button_state == 0 && 
+	if (!gtk_window_has_toplevel_focus(GTK_WINDOW(widget)) && button_state == 0 &&
 		!(modifier_state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_SUPER_MASK)))
 	{
 		gtk_widget_destroy(GTK_WIDGET(widget));
