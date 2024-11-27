@@ -13,8 +13,19 @@ Simple GTK Launcher
 - [x] A simple configuration tool
 
 ## Build
-Main Program:
-
+- All:
 ```
 make
+```
+
+- Main Program:
+
+```
+make sglauncher
+```
+
+- Localization files:
+
+```
+make compile-locales
 ```

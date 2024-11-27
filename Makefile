@@ -6,25 +6,42 @@ SRC = sglauncher.c
 OBJ = $(SRC:.c=.o)
 EXE = sglauncher
 
+LOCALEDIR = po
+LOCALE_INSTALL_DIR = $(PREFIX)/share/locale
+LANGUAGES = es
+DOMAIN = $(EXE)
+
 PREFIX = /usr
 BIN_DIR = $(PREFIX)/bin
 APP_DIR = $(PREFIX)/share/applications
 
-all: $(EXE)
+all: $(EXE) compile-locales
 sglauncher: sglauncher.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
+
+compile-locales:
+	@for lang in $(LANGUAGES); do \
+		mkdir -p $(LOCALEDIR)/$$lang/LC_MESSAGES; \
+		msgfmt -o $(LOCALEDIR)/$$lang/LC_MESSAGES/$(DOMAIN).mo $(LOCALEDIR)/$$lang/$(DOMAIN).po; \
+	done
 
 debug: sglauncher.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm -g
 test:
 	./$(EXE)
 install:
-	install -Dm755 $(EXE) $(BIN_DIR)/$(EXE)
-	install -Dm644 $(EXE).desktop $(APP_DIR)/$(EXE).desktop
-	install -Dm644 icons/sglauncher.svg $(PREFIX)/share/icons/hicolor/48x48/apps/sglauncher.svg
+	install -Dvm755 $(EXE) $(BIN_DIR)/$(EXE)
+	install -Dvm644 $(EXE)-cfg.desktop $(APP_DIR)/$(EXE)-cfg.desktop
+	install -Dvm644 icons/$(EXE).svg $(PREFIX)/share/icons/hicolor/48x48/apps/$(EXE).svg
+	@for lang in $(LANGUAGES); do \
+		install -Dvm644 $(LOCALEDIR)/$$lang/LC_MESSAGES/$(DOMAIN).mo $(LOCALE_INSTALL_DIR)/$$lang/LC_MESSAGES/$(DOMAIN).mo; \
+	done
 uninstall:
-	rm $(BIN_DIR)/$(EXE)
-	rm $(APP_DIR)/$(EXE).desktop
-	rm $(PREFIX)/share/icons/hicolor/64x64/apps/sglauncher.svg
+	rm -v $(BIN_DIR)/$(EXE)
+	rm -v $(APP_DIR)/$(EXE)-cfg.desktop
+	rm -v $(PREFIX)/share/icons/hicolor/64x64/apps/sglauncher.svg
+	@for lang in $(LANGUAGES); do \
+		rm -f $(LOCALE_INSTALL_DIR)/$$lang/LC_MESSAGES/$(DOMAIN).mo; \
+	done
 clean:
 	rm -f $(OBJ) $(EXE) debug
