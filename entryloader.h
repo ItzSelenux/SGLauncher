@@ -122,7 +122,34 @@ void load_apps(GtkTreeView *treeview)
 				continue;
 			}
 
+			if (deskenv)
+			{
+				gchar **show_in_list = NULL,
+				*only_show_in = g_key_file_get_string(key_file, "Desktop Entry", "OnlyShowIn", NULL);
+				if (only_show_in)
+				{
+					show_in_list = g_strsplit(only_show_in, ";", -1);
 
+					gboolean matches = FALSE;
+					for (gchar **env = show_in_list; *env; env++)
+					{
+						if (g_strcmp0(*env, deskenv) == 0)
+						{
+							matches = TRUE;
+							break;
+						}
+					}
+
+					g_free(only_show_in);
+					g_strfreev(show_in_list);
+					if (!matches && !ignoreonlyshowin)
+					{
+						g_free(path);
+						g_key_file_free(key_file);
+						continue;
+					}
+				}
+			}
 
 			gchar *app_name = g_key_file_get_locale_string(key_file, "Desktop Entry", "Name", NULL, NULL);
 			gchar *app_comment = g_key_file_get_locale_string(key_file, "Desktop Entry", "Comment", NULL, NULL);

@@ -180,6 +180,7 @@ void create_window(void)
 
 	web_row = gtk_list_box_row_new();
 	web_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
 	gtk_container_add(GTK_CONTAINER(web_row), web_box);
 
 	GtkWidget *webicon = gtk_image_new_from_icon_name("edit-find", GTK_ICON_SIZE_BUTTON);
@@ -187,7 +188,18 @@ void create_window(void)
 
 	GtkWidget *webrun = gtk_label_new(_("Search on Web"));
 	gtk_box_pack_start(GTK_BOX(web_box), webrun, FALSE, FALSE, 0);
-	
+
+	xdg_row = gtk_list_box_row_new();
+	xdg_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_container_add(GTK_CONTAINER(xdg_row), xdg_box);
+
+
+	GtkWidget *xdgicon = gtk_image_new_from_icon_name("folder", GTK_ICON_SIZE_BUTTON);
+	gtk_box_pack_start(GTK_BOX(xdg_box), xdgicon, FALSE, FALSE, 0);
+
+	GtkWidget *xdgrun = gtk_label_new(_("Open file/directory"));
+	gtk_box_pack_start(GTK_BOX(xdg_box), xdgrun, FALSE, FALSE, 0);
+
 	if (showcmd == 1)
 	{
 		gtk_list_box_insert(GTK_LIST_BOX(listbox2), cmd_row, -1);
@@ -195,6 +207,10 @@ void create_window(void)
 	if (showweb == 1)
 	{
 		gtk_list_box_insert(GTK_LIST_BOX(listbox2), web_row, -1);
+	}
+	if (showofd == 1)
+	{
+		gtk_list_box_insert(GTK_LIST_BOX(listbox2), xdg_row, -1);
 	}
 	gtk_widget_set_size_request(web_row, -1, 32);
 	gtk_widget_set_size_request(cmd_row, -1, 32);

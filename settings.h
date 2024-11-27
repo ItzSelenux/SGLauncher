@@ -7,7 +7,6 @@ void updateconf(GtkButton *widget, gpointer user_data)
 	GError *error = NULL;
 
 	const gchar *activetext = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(webcombo)),
-		*active_order = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(worder)),
 		*ncengine = NULL,
 		*entry_text = gtk_entry_get_text(GTK_ENTRY(webctm)),
 		*placeholder_text = gtk_entry_get_placeholder_text(GTK_ENTRY(webctm));
@@ -37,9 +36,10 @@ void updateconf(GtkButton *widget, gpointer user_data)
 
 		g_key_file_set_string(config, "Elements", "cengine", "https://search.disroot.org/search?q");
 		g_key_file_set_string(config, "Elements", "wengine", 0);
-		g_key_file_set_integer(config, "Elements", "showcmd", 0);
+		g_key_file_set_integer(config, "Elements", "showcmd", 1);
 		g_key_file_set_integer(config, "Elements", "showweb", 0);
 		g_key_file_set_integer(config, "Elements", "showcalc", 1);
+		g_key_file_set_integer(config, "Elements", "showofd", 1);
 		g_key_file_set_integer(config, "View", "iconsize", 16);
 		g_key_file_set_integer(config, "View", "useiconview", 0);
 		g_key_file_set_integer(config, "View", "showda", 1);
@@ -48,6 +48,7 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		g_key_file_set_integer(config, "Behavior", "showscientific", 1);
 		g_key_file_set_integer(config, "Behavior", "ignorenodisplay", 1);
 		g_key_file_set_integer(config, "Behavior", "ignoreterminal", 0);
+		g_key_file_set_integer(config, "Behavior", "ignoreonlyshowin", 0);
 		g_key_file_set_integer(config, "Window", "usecsd", 1);
 		g_key_file_set_integer(config, "Window", "hidetitle", 0);
 		g_key_file_set_integer(config, "Window", "hidewindeco", 0);
@@ -57,6 +58,7 @@ void updateconf(GtkButton *widget, gpointer user_data)
 	{
 		showcmd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcmd));
 		showweb = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowweb));
+		showofd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowofd));
 		showcalc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowcalc));
 		showda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowda));
 		useiconview = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wuseiconview));
@@ -64,45 +66,32 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		closeterm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wcloseterm));
 		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
 		ignorenodisplay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignorenodisplay));
+		ignoreonlyshowin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignorenodisplay));
 		ignoreterminal = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignoreterminal));
 		exitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
 		usecsd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wusecsd));
 		hidetitle = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(whidetitle));
 		hidewindeco = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(whidewindeco));
+		order = gtk_combo_box_get_active(GTK_COMBO_BOX(worder));
+		wengine = gtk_combo_box_get_active(GTK_COMBO_BOX(webcombo));
 		iconsize = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(wiconsize));
 		ncengine = (entry_text && strlen(entry_text) > 0) ? entry_text : placeholder_text;
 
-		gchar *cweb = NULL;
-		if (activetext) 
-		{
-			if (g_strcmp0(activetext, "Google") == 0) cweb = "1";
-			else if (g_strcmp0(activetext, "DuckDuckGo") == 0) cweb = "0";
-			else if (g_strcmp0(activetext, "Bing") == 0) cweb = "2";
-			else if (g_strcmp0(activetext, "Custom") == 0) cweb = "3";
-		}
-
-		gchar *corder = NULL;
-		if (active_order)
-		{
-			if (g_strcmp0(active_order, "Horizontal - Apps at bottom") == 0) corder = "1";
-			else if (g_strcmp0(active_order, "Horizontal - Apps at top") == 0) corder = "0";
-			else if (g_strcmp0(active_order, "Vertical - Apps at left") == 0) corder = "2";
-			else if (g_strcmp0(active_order, "Vertical - Apps at right") == 0) corder = "3";
-		}
-
 		g_key_file_set_string(config, "Elements", "cengine", ncengine);
-		g_key_file_set_string(config, "Elements", "wengine", cweb);
+		g_key_file_set_integer(config, "Elements", "wengine", wengine);
 		g_key_file_set_integer(config, "Elements", "showcmd", showcmd);
 		g_key_file_set_integer(config, "Elements", "showweb", showweb);
+		g_key_file_set_integer(config, "Elements", "showofd", showofd);
 		g_key_file_set_integer(config, "Elements", "showcalc", showcalc);
 		g_key_file_set_integer(config, "View", "iconsize", iconsize);
 		g_key_file_set_integer(config, "View", "useiconview", useiconview);
 		g_key_file_set_integer(config, "View", "showda", showda);
-		g_key_file_set_string(config, "View", "order", corder);
+		g_key_file_set_integer(config, "View", "order", order);
 		g_key_file_set_integer(config, "Behavior", "closeterm", closeterm);
 		g_key_file_set_integer(config, "Behavior", "showscientific", showscientific);
 		g_key_file_set_integer(config, "Behavior", "ignorenodisplay", ignorenodisplay);
 		g_key_file_set_integer(config, "Behavior", "ignoreterminal", ignoreterminal);
+		g_key_file_set_integer(config, "Behavior", "ignoreonlyshowin", ignoreonlyshowin);
 		g_key_file_set_integer(config, "Window", "usecsd", usecsd);
 		g_key_file_set_integer(config, "Window", "hidetitle", hidetitle);
 		g_key_file_set_integer(config, "Window", "hidewindeco", hidewindeco);
@@ -159,6 +148,9 @@ void readconf(void)
 		if (g_key_file_has_key(key_file, "Elements", "showweb", NULL))
 			showweb = g_key_file_get_integer(key_file, "Elements", "showweb", NULL);
 
+		if (g_key_file_has_key(key_file, "Elements", "showofd", NULL))
+			showofd = g_key_file_get_integer(key_file, "Elements", "showofd", NULL);
+
 		if (g_key_file_has_key(key_file, "Elements", "showcalc", NULL))
 			showcalc = g_key_file_get_integer(key_file, "Elements", "showcalc", NULL);
 
@@ -186,6 +178,9 @@ void readconf(void)
 
 		if (g_key_file_has_key(key_file, "Behavior", "ignoreterminal", NULL))
 			ignoreterminal = g_key_file_get_integer(key_file, "Behavior", "ignoreterminal", NULL);
+
+		if (g_key_file_has_key(key_file, "Behavior", "ignoreonlyshowin", NULL))
+			ignoreonlyshowin = g_key_file_get_integer(key_file, "Behavior", "ignoreonlyshowin", NULL);
 
 
 		if (g_key_file_has_key(key_file, "Window", "usecsd", NULL))

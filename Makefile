@@ -13,8 +13,7 @@ APP_DIR = $(PREFIX)/share/applications
 all: $(EXE)
 sglauncher: sglauncher.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
-sglauncher-cfg: sglauncher-cfg.o
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm
+
 debug: sglauncher.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS) -lm -g
 test:

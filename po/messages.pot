@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 17:23-0600\n"
+"POT-Creation-Date: 2024-11-26 21:07-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,99 +17,127 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: cfgmgr.h:56
+#: cfgmgr.h:54
+msgid "Custom"
+msgstr ""
+
+#: cfgmgr.h:55
 msgid "Custom Search Engine:"
 msgstr ""
 
-#: cfgmgr.h:58
+#: cfgmgr.h:57
 msgid "Show \"Run in Terminal\" entry"
 msgstr ""
 
-#: cfgmgr.h:60
+#: cfgmgr.h:59
 msgid "Show \"Search on Web\" entry"
 msgstr ""
 
-#: cfgmgr.h:62
+#: cfgmgr.h:61
+msgid "Show \"Open file/Directory \" entry"
+msgstr ""
+
+#: cfgmgr.h:63
 msgid "Show Math answer when numbers are typed"
 msgstr ""
 
+#: cfgmgr.h:67
+msgid "Horizontal - Apps at top"
+msgstr ""
+
+#: cfgmgr.h:68
+msgid "Horizontal - Apps at bottom"
+msgstr ""
+
+#: cfgmgr.h:69
+msgid "Vertical - Apps at left"
+msgstr ""
+
 #: cfgmgr.h:70
+msgid "Vertical - Apps at right"
+msgstr ""
+
+#: cfgmgr.h:71
 msgid "Show Desktop actions"
 msgstr ""
 
-#: cfgmgr.h:72
+#: cfgmgr.h:73
 msgid "Search entry on bottom"
 msgstr ""
 
-#: cfgmgr.h:74
+#: cfgmgr.h:75
 msgid "Use icon view"
 msgstr ""
 
-#: cfgmgr.h:80
+#: cfgmgr.h:81
 msgid "Close terminal when process finishes"
 msgstr ""
 
-#: cfgmgr.h:82
+#: cfgmgr.h:83
 msgid "Use scientific notation on math answers"
 msgstr ""
 
-#: cfgmgr.h:84
+#: cfgmgr.h:85
 msgid "Ignore \"NoDisplay\" apps"
 msgstr ""
 
-#: cfgmgr.h:86
+#: cfgmgr.h:87
 msgid "Ignore Terminal apps"
 msgstr ""
 
 #: cfgmgr.h:89
+msgid "Ignore \"OnlyShowIn\" Value"
+msgstr ""
+
+#: cfgmgr.h:92
 msgid "Use CSD Decoration"
 msgstr ""
 
-#: cfgmgr.h:91
+#: cfgmgr.h:94
 msgid "Hide CSD Title"
 msgstr ""
 
-#: cfgmgr.h:93
+#: cfgmgr.h:96
 msgid "Disable WM Decoration"
 msgstr ""
 
-#: cfgmgr.h:95
+#: cfgmgr.h:98
 msgid "Exit when unfocused"
 msgstr ""
 
-#: cfgmgr.h:98
+#: cfgmgr.h:101
 msgid "Default"
 msgstr ""
 
-#: cfgmgr.h:99
+#: cfgmgr.h:102
 msgid "Apply"
 msgstr ""
 
-#: cfgmgr.h:103
+#: cfgmgr.h:106
 msgid "Elements"
 msgstr ""
 
-#: cfgmgr.h:104
+#: cfgmgr.h:107
 msgid "Search Engine:"
 msgstr ""
 
-#: cfgmgr.h:115
+#: cfgmgr.h:119
 msgid "View"
 msgstr ""
 
-#: cfgmgr.h:116
+#: cfgmgr.h:120
 msgid "Item order:"
 msgstr ""
 
-#: cfgmgr.h:118
+#: cfgmgr.h:122
 msgid "Icon Size"
 msgstr ""
 
-#: cfgmgr.h:126
+#: cfgmgr.h:130
 msgid "Behavior"
 msgstr ""
 
-#: cfgmgr.h:134
+#: cfgmgr.h:139
 msgid "Window"
 msgstr ""
 
@@ -157,6 +185,10 @@ msgstr ""
 msgid "Run in Terminal"
 msgstr ""
 
-#: mainwindow.h:188
+#: mainwindow.h:189
 msgid "Search on Web"
+msgstr ""
+
+#: mainwindow.h:200
+msgid "Open file/directory"
 msgstr ""

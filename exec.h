@@ -117,5 +117,11 @@ void on_run_command(GtkWidget *widget, GdkEventButton *event, GtkWidget *input)
 		run_command(applist, (gpointer)cmd);
 		g_free(cmd);
 	}
+	else if ((void*)selected_row == (void*)xdg_row)
+	{
+		cmd = g_strdup_printf("xdg-open %s", text);
+		run_command(applist, (gpointer)cmd);
+		g_free(cmd);
+	}
 }
 
