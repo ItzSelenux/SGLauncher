@@ -63,7 +63,7 @@ void load_apps(GtkTreeView *treeview)
 	size_t z = 0;
 	for (const gchar *const *dir = data_dirs; *dir != NULL; dir++)
 	{
-		app_dirs[z] = g_strconcat(*dir, "applications", NULL);
+		app_dirs[z] = g_strconcat(*dir, "/applications", NULL);
 		z++;
 	}
 

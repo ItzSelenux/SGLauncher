@@ -66,7 +66,7 @@ void updateconf(GtkButton *widget, gpointer user_data)
 		closeterm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wcloseterm));
 		showscientific = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wshowscientific));
 		ignorenodisplay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignorenodisplay));
-		ignoreonlyshowin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignorenodisplay));
+		ignoreonlyshowin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignoreonlyshowin));
 		ignoreterminal = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wignoreterminal));
 		exitwhenunfocused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wexitwhenunfocused));
 		usecsd = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(wusecsd));

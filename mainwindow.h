@@ -144,7 +144,7 @@ void create_window(void)
 	{
 		if (hidewindeco)
 		{
-			gtk_window_set_decorated(GTK_WINDOW(window), hidewindeco);
+			gtk_window_set_decorated(GTK_WINDOW(window), !hidewindeco);
 			gtk_container_set_border_width(GTK_CONTAINER(window), 5);
 		}
 	}

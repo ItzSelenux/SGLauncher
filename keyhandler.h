@@ -57,7 +57,6 @@ static void on_entry_changed(GtkEntry *target, FilterData *filterdata)
 		if (on_filter_visible(model, &iter, filterdata))
 		{
 			GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-			//gtk_tree_view_expand_to_path(filterdata->treeview, path);
 			gtk_tree_path_free(path);
 		}
 		valid = gtk_tree_model_iter_next(model, &iter);
