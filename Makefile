@@ -22,7 +22,8 @@ sglauncher: sglauncher.o
 compile-locales:
 	@for lang in $(LANGUAGES); do \
 		mkdir -p $(LOCALEDIR)/$$lang/LC_MESSAGES; \
-		msgfmt -o $(LOCALEDIR)/$$lang/LC_MESSAGES/$(DOMAIN).mo $(LOCALEDIR)/$$lang/$(DOMAIN).po; \
+		echo Compiling locale: $$lang; \
+		msgfmt  $(LOCALEDIR)/$$lang/$(DOMAIN).po --output $(LOCALEDIR)/$$lang/LC_MESSAGES/$(DOMAIN).mo --verbose; \
 	done
 
 debug: sglauncher.o

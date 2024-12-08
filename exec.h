@@ -1,6 +1,7 @@
 void run_command(GtkWidget *widget, gpointer data)
 {
 	gchar *input = (gchar *)data;
+	g_info("Running input: %s", input);
 	if (input)
 	{
 		gchar *percentPos = strchr(input, '%');

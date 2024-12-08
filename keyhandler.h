@@ -98,6 +98,10 @@ static void on_entry_changed(GtkEntry *target, FilterData *filterdata)
 			gtk_widget_show(pr);
 			gtk_widget_show(listbox2);
 		}
+		else
+		{
+			gtk_widget_hide(listbox2);
+		}
 	}
 }
 

@@ -20,7 +20,7 @@ jobs:
       id: date
       run: |
        echo "DATE=$(git log -n 1 --format='%ad' --date=format-local:'%Y%m%d.%H%M')" >> $GITHUB_ENV
-       echo "GH_RELEASE_FILE=sglauncher-$(git log -n 1 --format='%ad' --date=format-local:'%Y%m%d.%H%M')-$(ldd --version | awk '/ldd/{print "-gnu-" $NF}')" >> $GITHUB_ENV
+       echo "GH_RELEASE_FILE=sglauncher-$(cat ./VERSION)-$(ldd --version | awk '/ldd/{print "-gnu-" $NF}')" >> $GITHUB_ENV
 
     - name: Install Dependencies
       run: |

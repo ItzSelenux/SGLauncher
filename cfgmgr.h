@@ -58,7 +58,7 @@ void showcfg(void)
 			gtk_widget_set_direction(wshowcmd, GTK_TEXT_DIR_RTL);
 		wshowweb = gtk_check_button_new_with_label (_("Show \"Search on Web\" entry"));
 			gtk_widget_set_direction(wshowweb, GTK_TEXT_DIR_RTL);
-		wshowofd = gtk_check_button_new_with_label (_("Show \"Open File/Directory \" entry"));
+		wshowofd = gtk_check_button_new_with_label (_("Show \"Open File/Directory\" entry"));
 			gtk_widget_set_direction(wshowofd, GTK_TEXT_DIR_RTL);
 		wshowcalc = gtk_check_button_new_with_label (_("Show Math answer when numbers are typed"));
 			gtk_widget_set_direction(wshowcalc, GTK_TEXT_DIR_RTL);

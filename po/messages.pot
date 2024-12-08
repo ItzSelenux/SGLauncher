@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 21:07-0600\n"
+"POT-Creation-Date: 2024-11-26 11:22-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,7 @@ msgid "Show \"Search on Web\" entry"
 msgstr ""
 
 #: cfgmgr.h:61
-msgid "Show \"Open file/Directory \" entry"
+msgid "Show \"Open File/Directory\" entry"
 msgstr ""
 
 #: cfgmgr.h:63
@@ -191,4 +191,12 @@ msgstr ""
 
 #: mainwindow.h:200
 msgid "Open file/directory"
+msgstr ""
+
+#: mainwindow.h:236
+msgid "Math Answer: "
+msgstr ""
+
+#: mainwindow.h:239
+msgid "Press Enter to Run first item, or down to select another item"
 msgstr ""

@@ -233,10 +233,10 @@ void create_window(void)
 	grid = gtk_grid_new();
 	gtk_container_add(GTK_CONTAINER(window), grid);
 	mathtext = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-	math = gtk_label_new("Math Answer: ");
+	math = gtk_label_new(_("Math Answer: "));
 	manswer = gtk_label_new("");
 	gtk_label_set_selectable(GTK_LABEL(manswer), TRUE);
-	pr = gtk_label_new("Press Enter to Run first item, or down to select another item");
+	pr = gtk_label_new(_("Press Enter to Run first item, or down to select another item"));
 
 	if (showcalc == 1)
 	{

@@ -18,33 +18,25 @@ FilterData filter_data;
 
 gint gtk_tree_iter_compare_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
 {
-	gchar *name_a = NULL;
-	gchar *name_b = NULL;
-	gchar *casefolded_a = NULL;
-	gchar *casefolded_b = NULL;
-	gint result;
+	GtkTreeIter parent_a, parent_b;
 
-	gtk_tree_model_get(model, a, 0, &name_a, -1);
-	gtk_tree_model_get(model, b, 0, &name_b, -1);
+	gboolean a_is_toplevel = !gtk_tree_model_iter_parent(model, &parent_a, a);
+	gboolean b_is_toplevel = !gtk_tree_model_iter_parent(model, &parent_b, b);
 
-	if (name_a == NULL)
+	if (a_is_toplevel && b_is_toplevel)
 	{
-		if (name_b == NULL) return 0;
-		return -1;
+		gchar *name_a, *name_b;
+		gtk_tree_model_get(model, a, 0, &name_a, -1);
+		gtk_tree_model_get(model, b, 0, &name_b, -1);
+
+		gint result = g_strcmp0(name_a, name_b);
+
+		g_free(name_a);
+		g_free(name_b);
+
+		return result;
 	}
-	if (name_b == NULL) return 1;
-
-	casefolded_a = g_utf8_casefold(name_a, -1);
-	casefolded_b = g_utf8_casefold(name_b, -1);
-
-	result = g_utf8_collate(casefolded_a, casefolded_b);
-
-	g_free(name_a);
-	g_free(name_b);
-	g_free(casefolded_a);
-	g_free(casefolded_b);
-
-	return result;
+	return 0;
 }
 
 void load_apps(GtkTreeView *treeview)
@@ -205,10 +197,10 @@ void load_apps(GtkTreeView *treeview)
 			gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(treeview), 4);
 			gtk_icon_view_set_tooltip_column(GTK_ICON_VIEW(iconview), 4);
 
-			// Handling Desktop Actions
-			gchar **groups = g_key_file_get_groups(key_file, NULL);
 			if (showda)
 			{
+			// Handling Desktop Actions
+				gchar **groups = g_key_file_get_groups(key_file, NULL);
 				for (int j = 0; groups[j] != NULL; j++)
 				{
 					if (g_str_has_prefix(groups[j], "Desktop Action"))
@@ -228,9 +220,9 @@ void load_apps(GtkTreeView *treeview)
 						}
 					}
 				}
+			g_strfreev(groups);
 			}
 
-			g_strfreev(groups);
 			g_free(app_name);
 			g_free(icon_name);
 			g_clear_object(&icon_pixbuf);
